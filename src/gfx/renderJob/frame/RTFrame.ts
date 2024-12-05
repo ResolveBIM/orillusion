@@ -12,8 +12,16 @@ export class RTFrame {
 
     public depthViewIndex: number = 0;
     public depthCleanValue: number = 1;
-    public depthLoadOp: GPULoadOp = `clear`;
+    private _depthLoadOp: GPULoadOp = `clear`;
     public isOutTarget: boolean = true;
+
+    public get depthLoadOp() {
+        return this._depthLoadOp;
+    }
+
+    public set depthLoadOp(value: GPULoadOp) {
+        this._depthLoadOp = value;
+    }
 
     constructor(attachments: RenderTexture[], rtDescriptors: RTDescriptor[], depthTexture?: RenderTexture, zPreTexture?: RenderTexture, isOutTarget: boolean = true) {
         this.renderTargets = attachments;
