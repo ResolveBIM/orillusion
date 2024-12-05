@@ -474,7 +474,7 @@ export class Engine3D {
 
     }
 
-    private static async updateFrame(time: number) {
+    public static async updateFrame(time: number) {
         Time.delta = time - Time.time;
         Time.time = time;
         Time.frame += 1;
