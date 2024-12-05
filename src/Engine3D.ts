@@ -322,7 +322,15 @@ export class Engine3D {
      * @param descriptor  {@link CanvasConfig}
      * @returns
      */
-    public static async init(descriptor: { canvasConfig?: CanvasConfig; beforeRender?: Function; renderLoop?: Function; lateRender?: Function, engineSetting?: EngineSetting } = {}) {
+    public static async init(
+        descriptor: {
+            canvasConfig?: CanvasConfig;
+            beforeRender?: Function;
+            renderLoop?: Function;
+            lateRender?: Function,
+            engineSetting?: EngineSetting
+        } = {}
+    ) {
         console.log('Engine Version', version);
 
         // for dev debug
