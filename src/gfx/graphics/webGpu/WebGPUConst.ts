@@ -1,3 +1,5 @@
+import { Engine3D } from '../../../Engine3D';
+
 /**
  * @internal
  */
@@ -53,19 +55,72 @@ type GPUBufferBindingType = 'uniform' | 'storage' | 'read-only-storage';
  * @internal
  */
 type GPUCanvasCompositingAlphaMode = 'opaque' | 'premultiplied';
+type GPUCompareFunctionMap = {
+    never: GPUCompareFunction;
+    less: GPUCompareFunction;
+    equal: GPUCompareFunction;
+    less_equal: GPUCompareFunction;
+    greater: GPUCompareFunction;
+    not_equal: GPUCompareFunction;
+    greater_equal: GPUCompareFunction;
+    always: GPUCompareFunction;
+};
 /**
  * @internal
  */
-export let GPUCompareFunction = {
-    never: 'never' as GPUCompareFunction,
-    less: 'less' as GPUCompareFunction,
-    equal: 'equal' as GPUCompareFunction,
-    less_equal: 'less-equal' as GPUCompareFunction,
-    greater: 'greater' as GPUCompareFunction,
-    not_equal: 'not-equal' as GPUCompareFunction,
-    greater_equal: 'greater-equal' as GPUCompareFunction,
-    always: 'always' as GPUCompareFunction,
+export const GPUCompareFunction: GPUCompareFunctionMap = {
+    never: 'never',
+    less: 'less',
+    equal: 'equal',
+    less_equal: 'less-equal',
+    greater: 'greater',
+    not_equal: 'not-equal',
+    greater_equal: 'greater-equal',
+    always: 'always',
 };
+/**
+ * @internal
+ * Compare functions for reversed depth buffer with keys matching regular depth
+ * buffer semantics
+ */
+export const ReversedGPUCompareFunction: GPUCompareFunctionMap = {
+    ...GPUCompareFunction,
+    less: 'greater',
+    less_equal: 'greater-equal',
+    greater: 'less',
+    greater_equal: 'less-equal',
+};
+/**
+ * @internal
+ * Get the correct comparison function based on depth buffer order (normal vs. reverse)
+ */
+export const getGPUCompareFunction = (): GPUCompareFunctionMap => {
+    if (Engine3D.setting.render.useReversedDepth) {
+        return ReversedGPUCompareFunction;
+    }
+    return GPUCompareFunction;
+};
+/**
+ * @internal
+ * Get the correct depth clear value based on depth buffer order (normal vs. reverse)
+ */
+export const getDepthClearValue = (cleanValue: number | 'near' | 'far'): number => {
+    let regularOrderValue: number;
+    if (cleanValue === 'near') {
+        regularOrderValue = 0
+    } else if (cleanValue === 'far') {
+        regularOrderValue = 1;
+    } else {
+        regularOrderValue = cleanValue;
+    }
+
+    if (Engine3D.setting.render.useReversedDepth) {
+        return 1 - regularOrderValue;
+    }
+
+    return regularOrderValue;
+}
+
 /**
  * @internal
  */

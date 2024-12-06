@@ -141,6 +141,7 @@ export class Engine3D {
             drawTrMax: Number.MAX_SAFE_INTEGER,
             zPrePass: false,
             useLogDepth: false,
+            useReversedDepth: false,
             useCompressGBuffer: false,
             gi: false,
             postProcessing: {

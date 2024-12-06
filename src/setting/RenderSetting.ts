@@ -25,6 +25,7 @@ export type RenderSetting = {
     drawTrMax: number;
     zPrePass: boolean;
     useLogDepth: boolean;
+    useReversedDepth: boolean;
     useCompressGBuffer: boolean;
     gi: boolean;
     /**
