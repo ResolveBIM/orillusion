@@ -1,4 +1,4 @@
-import { GPUCompareFunction, GPUCullMode } from "../../../../../gfx/graphics/webGpu/WebGPUConst";
+import { getGPUCompareFunction, GPUCullMode } from "../../../../../gfx/graphics/webGpu/WebGPUConst";
 import { Texture } from "../../../../../gfx/graphics/webGpu/core/texture/Texture";
 import { RenderShaderPass } from "../../../../../gfx/graphics/webGpu/shader/RenderShaderPass";
 import { BlendMode } from "../../../../../materials/BlendMode";
@@ -25,6 +25,6 @@ export class SkyShader extends Shader {
         shaderState.frontFace = `cw`;
         shaderState.cullMode = GPUCullMode.back;
         shaderState.depthWriteEnabled = false;
-        shaderState.depthCompare = GPUCompareFunction.less;
+        shaderState.depthCompare = getGPUCompareFunction().less;
     }
 }

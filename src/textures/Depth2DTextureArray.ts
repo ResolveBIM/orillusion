@@ -1,4 +1,4 @@
-import { GPUTextureFormat } from '../gfx/graphics/webGpu/WebGPUConst';
+import { GPUTextureFormat, getGPUCompareFunction } from '../gfx/graphics/webGpu/WebGPUConst';
 import { webGPUContext } from '../gfx/graphics/webGpu/Context3D';
 import { ITexture } from '../gfx/graphics/webGpu/core/texture/ITexture';
 import { Texture } from '../gfx/graphics/webGpu/core/texture/Texture';
@@ -56,7 +56,7 @@ export class Depth2DTextureArray extends Texture implements ITexture {
     internalCreateSampler() {
         this.gpuSampler = webGPUContext.device.createSampler({});
         this.gpuSampler_comparison = webGPUContext.device.createSampler({
-            compare: 'less',
+            compare: getGPUCompareFunction().less,
             label: "sampler_comparison"
         });
     }

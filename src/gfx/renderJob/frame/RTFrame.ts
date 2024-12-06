@@ -1,4 +1,5 @@
 import { RenderTexture } from "../../../textures/RenderTexture";
+import { getDepthClearValue } from "../../graphics/webGpu/WebGPUConst";
 import { RTDescriptor } from "../../graphics/webGpu/descriptor/RTDescriptor";
 
 export class RTFrame {
@@ -11,7 +12,7 @@ export class RTFrame {
     public depthTexture: RenderTexture;
 
     public depthViewIndex: number = 0;
-    public depthCleanValue: number = 1;
+    public depthCleanValue: number = getDepthClearValue('far');
     private _depthLoadOp: GPULoadOp = `clear`;
     public isOutTarget: boolean = true;
 

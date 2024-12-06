@@ -23,7 +23,7 @@ import { MaterialDataUniformGPUBuffer } from "../core/buffer/MaterialDataUniform
 import { ShaderUtil } from "./util/ShaderUtil";
 import { Reference } from "../../../../util/Reference";
 import { CSM } from "../../../../core/csm/CSM";
-import { GPUCompareFunction, GPUCullMode } from "../WebGPUConst";
+import { getGPUCompareFunction, GPUCullMode } from "../WebGPUConst";
 import { UniformValue } from "./value/UniformValue";
 import { PassType } from "../../../renderJob/passRenderer/state/PassType";
 import { Vector4 } from "../../../../math/Vector4";
@@ -778,7 +778,7 @@ export class RenderShaderPass extends ShaderPassBase {
             if (Engine3D.setting.render.zPrePass && renderPassState.zPreTexture && shaderState.useZ) {
                 renderPipelineDescriptor[`depthStencil`] = {
                     depthWriteEnabled: false,
-                    depthCompare: GPUCompareFunction.less,
+                    depthCompare: getGPUCompareFunction().less,
                     format: renderPassState.zPreTexture.format,
                 };
             } else {

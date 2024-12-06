@@ -6,7 +6,7 @@ import { View3D } from "../../../../core/View3D";
 import { Vector3 } from "../../../../math/Vector3";
 import { Depth2DTextureArray } from "../../../../textures/Depth2DTextureArray";
 import { Time } from "../../../../util/Time";
-import { GPUTextureFormat } from "../../../graphics/webGpu/WebGPUConst";
+import { GPUTextureFormat, getDepthClearValue } from "../../../graphics/webGpu/WebGPUConst";
 import { WebGPUDescriptorCreator } from "../../../graphics/webGpu/descriptor/WebGPUDescriptorCreator";
 import { GPUContext } from "../../GPUContext";
 import { EntityCollect } from "../../collect/EntityCollect";
@@ -52,7 +52,7 @@ export class ShadowMapPassRenderer extends RendererBase {
             rtFrame.depthTexture = tex;
             rtFrame.label = "shadowRender";
             rtFrame.customSize = true;
-            rtFrame.depthCleanValue = 1;
+            rtFrame.depthCleanValue = getDepthClearValue('far');
             let rendererPassState = WebGPUDescriptorCreator.createRendererPassState(rtFrame);
             this.rendererPassStates[i] = rendererPassState;
         }

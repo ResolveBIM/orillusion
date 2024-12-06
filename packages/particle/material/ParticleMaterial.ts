@@ -1,4 +1,4 @@
-import { Engine3D, ShaderLib, Texture, GPUCompareFunction, BlendMode, Color, Vector4, RenderShaderPass, Material, PassType, Shader } from "@orillusion/core";
+import { Engine3D, ShaderLib, Texture, getGPUCompareFunction, BlendMode, Color, Vector4, RenderShaderPass, Material, PassType, Shader } from "@orillusion/core";
 import { ParticleRenderShader } from "../shader/ParticleRenderShader";
 
 /**
@@ -24,7 +24,7 @@ export class ParticleMaterial extends Material {
         colorPass.renderOrder = 3001;
         colorPass.shaderState.transparent = true;
         colorPass.shaderState.depthWriteEnabled = false;
-        colorPass.shaderState.depthCompare = GPUCompareFunction.less;
+        colorPass.shaderState.depthCompare = getGPUCompareFunction().less;
         colorPass.shaderState.acceptShadow = false;
         colorPass.shaderState.receiveEnv = false;
         colorPass.shaderState.acceptGI = false;

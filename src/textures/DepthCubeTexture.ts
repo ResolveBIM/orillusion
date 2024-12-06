@@ -1,5 +1,5 @@
 import { webGPUContext } from "../gfx/graphics/webGpu/Context3D";
-import { GPUTextureFormat } from "../gfx/graphics/webGpu/WebGPUConst";
+import { GPUTextureFormat, getGPUCompareFunction } from "../gfx/graphics/webGpu/WebGPUConst";
 import { ITexture } from "../gfx/graphics/webGpu/core/texture/ITexture";
 import { Texture } from "../gfx/graphics/webGpu/core/texture/Texture";
 
@@ -71,7 +71,7 @@ export class DepthCubeTexture extends Texture implements ITexture {
     public internalCreateSampler() {
         this.gpuSampler = webGPUContext.device.createSampler({});
         this.gpuSampler_comparison = webGPUContext.device.createSampler({
-            compare: 'less',
+            compare: getGPUCompareFunction().less,
             label: "sampler_comparison"
         });
     }

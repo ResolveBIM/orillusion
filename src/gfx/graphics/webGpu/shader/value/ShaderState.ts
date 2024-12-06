@@ -1,5 +1,5 @@
 import { BlendMode } from '../../../../../materials/BlendMode';
-import { GPUCompareFunction, GPUCullMode, GPUPrimitiveTopology } from '../../WebGPUConst';
+import { getGPUCompareFunction, GPUCullMode, GPUPrimitiveTopology } from '../../WebGPUConst';
 
 /**
  * @internal
@@ -8,7 +8,7 @@ import { GPUCompareFunction, GPUCullMode, GPUPrimitiveTopology } from '../../Web
  */
 export class ShaderState {
     public blendMode?: BlendMode = BlendMode.NONE;
-    public depthCompare?: GPUCompareFunction = GPUCompareFunction.less_equal;
+    private _depthCompare?: GPUCompareFunction;
     public depthWriteEnabled?: boolean = true;
     public frontFace?: GPUFrontFace = `ccw`;
     public cullMode?: GPUCullMode = GPUCullMode.back;
@@ -33,6 +33,14 @@ export class ShaderState {
     public alphaCutoff: number;
     public useFragDepth: boolean = false;
     public writeMasks: GPUColorWriteFlags[] = [];
+
+    public get depthCompare(): GPUCompareFunction {
+        return this._depthCompare || getGPUCompareFunction().less_equal;
+    }
+
+    public set depthCompare(depthCompare: GPUCompareFunction) {
+        this._depthCompare = depthCompare;
+    }
 
     public setFromMapValues(values: Map<string, any>) {
         if (values.has('blendMode')) {

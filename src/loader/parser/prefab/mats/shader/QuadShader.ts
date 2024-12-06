@@ -1,5 +1,5 @@
 import { Engine3D } from "../../../../../Engine3D";
-import { GPUCompareFunction, GPUCullMode } from "../../../../../gfx/graphics/webGpu/WebGPUConst";
+import { getGPUCompareFunction, GPUCullMode } from "../../../../../gfx/graphics/webGpu/WebGPUConst";
 import { Texture } from "../../../../../gfx/graphics/webGpu/core/texture/Texture";
 import { RenderShaderPass } from "../../../../../gfx/graphics/webGpu/shader/RenderShaderPass";
 import { BlendMode } from "../../../../../materials/BlendMode";
@@ -22,7 +22,7 @@ export class QuadShader extends Shader {
         colorShader.blendMode = BlendMode.NONE;
         shaderState.frontFace = `cw`;
         shaderState.depthWriteEnabled = false;
-        shaderState.depthCompare = GPUCompareFunction.always;
+        shaderState.depthCompare = getGPUCompareFunction().always;
         shaderState.multisample = 0;
 
         this.setTexture("baseMap", Engine3D.res.blackTexture);

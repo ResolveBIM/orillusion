@@ -49,7 +49,7 @@ export class Demo_Softbody {
         boxMat.roughness = 0.8;
         boxMat.metallic = 0.1
         boxMat.cullMode = `front`
-        //boxMat.depthCompare = `greater`
+        //boxMat.depthCompare = getGPUCompareFunction().greater
 
         mr.material = boxMat;
         // mr.material.doubleSide = true; 

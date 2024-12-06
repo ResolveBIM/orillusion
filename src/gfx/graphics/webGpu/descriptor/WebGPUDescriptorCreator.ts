@@ -1,6 +1,6 @@
 import { RTFrame } from '../../../renderJob/frame/RTFrame';
 import { RTResourceConfig } from '../../../renderJob/config/RTResourceConfig';
-import { GPUTextureFormat } from '../WebGPUConst';
+import { GPUTextureFormat, getDepthClearValue } from '../WebGPUConst';
 import { webGPUContext } from '../Context3D';
 import { RendererPassState } from '../../../renderJob/passRenderer/state/RendererPassState';
 import { CResizeEvent } from '../../../../event/CResizeEvent';
@@ -124,7 +124,7 @@ export class WebGPUDescriptorCreator {
                 depthStencilAttachment: {
                     view: renderPassState.depthTexture.getGPUView() as GPUTextureView,
                     depthLoadOp: renderPassState.zPreTexture ? `load` : renderPassState.depthLoadOp,
-                    depthClearValue: renderPassState.zPreTexture ? 1 : renderPassState.depthCleanValue,
+                    depthClearValue: renderPassState.zPreTexture ? getDepthClearValue('far') : renderPassState.depthCleanValue,
                     depthStoreOp: "store",
                     // stencilClearValue: 0,
                     // stencilLoadOp: 'clear',

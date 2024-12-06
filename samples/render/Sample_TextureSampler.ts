@@ -1,5 +1,5 @@
 import { GUIHelp } from "@orillusion/debug/GUIHelp";
-import { Object3D, Scene3D, Engine3D, AtmosphericComponent, CameraUtil, HoverCameraController, View3D, DirectLight, KelvinUtil, UnLitMaterial, MeshRenderer, PlaneGeometry, GPUAddressMode, GPUFilterMode, GPUCompareFunction, LitMaterial, Object3DUtil } from "@orillusion/core";
+import { Object3D, Scene3D, Engine3D, AtmosphericComponent, CameraUtil, HoverCameraController, View3D, DirectLight, KelvinUtil, UnLitMaterial, MeshRenderer, PlaneGeometry, GPUAddressMode, GPUFilterMode, getGPUCompareFunction, LitMaterial, Object3DUtil } from "@orillusion/core";
 import { GUIUtil } from "@samples/utils/GUIUtil";
 import { UVMoveComponent } from "@samples/material/script/UVMoveComponent";
 
@@ -79,15 +79,7 @@ class Sample_TextureSample {
             filter[GPUFilterMode.linear] = GPUFilterMode.linear;
 
             // enum GPUCompareFunction
-            let depthCompare = {}
-            depthCompare[GPUCompareFunction.not_equal] = GPUCompareFunction.not_equal;
-            depthCompare[GPUCompareFunction.always] = GPUCompareFunction.always;
-            depthCompare[GPUCompareFunction.never] = GPUCompareFunction.never;
-            depthCompare[GPUCompareFunction.not_equal] = GPUCompareFunction.not_equal;
-            depthCompare[GPUCompareFunction.greater_equal] = GPUCompareFunction.greater_equal;
-            depthCompare[GPUCompareFunction.greater] = GPUCompareFunction.greater;
-            depthCompare[GPUCompareFunction.less_equal] = GPUCompareFunction.less_equal;
-            depthCompare[GPUCompareFunction.less] = GPUCompareFunction.less;
+            let depthCompare = Object.fromEntries(Object.values(getGPUCompareFunction()).map(v => [v, v]));
 
             // GUI
             GUIHelp.addFolder("Texture Sampler");

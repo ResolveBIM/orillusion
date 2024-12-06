@@ -2,7 +2,7 @@ import { ColliderComponent } from "../../components/ColliderComponent";
 import { MeshRenderer } from "../../components/renderer/MeshRenderer";
 import { BoxColliderShape } from "../../components/shape/BoxColliderShape";
 import { Object3D } from "../../core/entities/Object3D";
-import { GPUCompareFunction } from "../../gfx/graphics/webGpu/WebGPUConst";
+import { getGPUCompareFunction } from "../../gfx/graphics/webGpu/WebGPUConst";
 import { UnLitMaterial } from "../../materials/UnLitMaterial";
 import { Color } from "../../math/Color";
 import { Vector3 } from "../../math/Vector3";
@@ -18,7 +18,7 @@ export class ScaleControlComponents extends TransformControllerBaseComponent {
         let boxXYZMaterial = new UnLitMaterial();
         boxXYZMaterial.doubleSide = true;
         boxXYZMaterial.baseColor = new Color(0.9, 0.9, 0.9);
-        boxXYZMaterial.depthCompare = GPUCompareFunction.always;
+        boxXYZMaterial.depthCompare = getGPUCompareFunction().always;
         this.mAxisColor[TransformAxisEnum.XYZ] = boxXYZMaterial.baseColor;
         this.mAxisMaterial[TransformAxisEnum.XYZ] = boxXYZMaterial;
 

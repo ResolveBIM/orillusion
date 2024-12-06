@@ -8,7 +8,7 @@ import { View3D } from "../../core/View3D";
 import { Object3D } from "../../core/entities/Object3D";
 import { MouseCode } from "../../event/MouseCode";
 import { PointerEvent3D } from "../../event/eventConst/PointerEvent3D";
-import { GPUCompareFunction } from "../../gfx/graphics/webGpu/WebGPUConst";
+import { getGPUCompareFunction } from "../../gfx/graphics/webGpu/WebGPUConst";
 import { UnLitMaterial } from "../../materials/UnLitMaterial";
 import { Color } from "../../math/Color";
 import { Matrix4 } from "../../math/Matrix4";
@@ -62,19 +62,19 @@ export class TransformControllerBaseComponent extends ComponentBase {
 
         let xAxisMaterial = new UnLitMaterial();
         xAxisMaterial.baseColor = new Color(1, 0, 0);
-        xAxisMaterial.depthCompare = GPUCompareFunction.always;
+        xAxisMaterial.depthCompare = getGPUCompareFunction().always;
         this.mAxisColor[TransformAxisEnum.X] = xAxisMaterial.baseColor;
         this.mAxisMaterial[TransformAxisEnum.X] = xAxisMaterial;
 
         let yAxisMaterial = new UnLitMaterial();
         yAxisMaterial.baseColor = new Color(0, 1, 0);
-        yAxisMaterial.depthCompare = GPUCompareFunction.always;
+        yAxisMaterial.depthCompare = getGPUCompareFunction().always;
         this.mAxisColor[TransformAxisEnum.Y] = yAxisMaterial.baseColor;
         this.mAxisMaterial[TransformAxisEnum.Y] = yAxisMaterial;
 
         let zAxisMaterial = new UnLitMaterial();
         zAxisMaterial.baseColor = new Color(0, 0, 1);
-        zAxisMaterial.depthCompare = GPUCompareFunction.always;
+        zAxisMaterial.depthCompare = getGPUCompareFunction().always;
         this.mAxisColor[TransformAxisEnum.Z] = zAxisMaterial.baseColor;
         this.mAxisMaterial[TransformAxisEnum.Z] = zAxisMaterial;
 

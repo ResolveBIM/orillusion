@@ -2,6 +2,7 @@ import { Engine3D } from "../../../../Engine3D";
 import { Camera3D } from "../../../../core/Camera3D";
 
 import { RenderTexture } from "../../../../textures/RenderTexture";
+import { getDepthClearValue } from "../../../graphics/webGpu/WebGPUConst";
 import { Texture } from "../../../graphics/webGpu/core/texture/Texture";
 import { RTDescriptor } from "../../../graphics/webGpu/descriptor/RTDescriptor";
 import { RTFrame } from "../../frame/RTFrame";
@@ -23,7 +24,7 @@ export class RendererPassState {
     public multisample: number = 0;
     public multiTexture: GPUTexture;
     public depthViewIndex: number = 0;
-    public depthCleanValue: number = 0;
+    public depthCleanValue: number = getDepthClearValue('near');
     public isOutTarget: boolean = true;
     public camera3D: Camera3D;
     public rtFrame: RTFrame;

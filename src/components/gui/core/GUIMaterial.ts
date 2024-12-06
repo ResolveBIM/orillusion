@@ -1,6 +1,6 @@
 import { Engine3D } from "../../../Engine3D";
 import { ShaderLib } from "../../../assets/shader/ShaderLib";
-import { GPUCompareFunction, GPUCullMode } from "../../../gfx/graphics/webGpu/WebGPUConst";
+import { getGPUCompareFunction, GPUCullMode } from "../../../gfx/graphics/webGpu/WebGPUConst";
 import { Texture } from "../../../gfx/graphics/webGpu/core/texture/Texture";
 import { RenderShaderPass } from "../../../gfx/graphics/webGpu/shader/RenderShaderPass";
 import { Shader } from "../../../gfx/graphics/webGpu/shader/Shader";
@@ -55,7 +55,7 @@ export class GUIMaterial extends Material {
         // shaderState.useZ = false;
         shaderState.depthWriteEnabled = false;
         shaderPass.blendMode = BlendMode.NORMAL;
-        shaderPass.depthCompare = space == GUISpace.View ? GPUCompareFunction.always : GPUCompareFunction.less_equal;
+        shaderPass.depthCompare = getGPUCompareFunction()[space == GUISpace.View ? 'always' : 'less_equal'];
         shaderPass.cullMode = GPUCullMode.back;
         shader.addRenderPass(shaderPass);
     }

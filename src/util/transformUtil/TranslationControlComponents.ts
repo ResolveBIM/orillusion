@@ -2,7 +2,7 @@ import { ColliderComponent } from "../../components/ColliderComponent";
 import { MeshRenderer } from "../../components/renderer/MeshRenderer";
 import { BoxColliderShape } from "../../components/shape/BoxColliderShape";
 import { Object3D } from "../../core/entities/Object3D";
-import { GPUCompareFunction } from "../../gfx/graphics/webGpu/WebGPUConst";
+import { getGPUCompareFunction } from "../../gfx/graphics/webGpu/WebGPUConst";
 import { UnLitMaterial } from "../../materials/UnLitMaterial";
 import { Color } from "../../math/Color";
 import { Matrix4 } from "../../math/Matrix4";
@@ -21,21 +21,21 @@ export class TranslationControlComponents extends TransformControllerBaseCompone
         let xyPlaneMaterial = new UnLitMaterial();
         xyPlaneMaterial.doubleSide = true;
         xyPlaneMaterial.baseColor = new Color(0, 0, 1);
-        xyPlaneMaterial.depthCompare = GPUCompareFunction.always;
+        xyPlaneMaterial.depthCompare = getGPUCompareFunction().always;
         this.mAxisColor[TransformAxisEnum.XY] = xyPlaneMaterial.baseColor;
         this.mAxisMaterial[TransformAxisEnum.XY] = xyPlaneMaterial;
 
         let xzPlaneMaterial = new UnLitMaterial();
         xzPlaneMaterial.doubleSide = true;
         xzPlaneMaterial.baseColor = new Color(0, 1, 0);
-        xzPlaneMaterial.depthCompare = GPUCompareFunction.always;
+        xzPlaneMaterial.depthCompare = getGPUCompareFunction().always;
         this.mAxisColor[TransformAxisEnum.XZ] = xzPlaneMaterial.baseColor;
         this.mAxisMaterial[TransformAxisEnum.XZ] = xzPlaneMaterial;
 
         let yzPlaneMaterial = new UnLitMaterial();
         yzPlaneMaterial.doubleSide = true;
         yzPlaneMaterial.baseColor = new Color(1, 0, 0);
-        yzPlaneMaterial.depthCompare = GPUCompareFunction.always;
+        yzPlaneMaterial.depthCompare = getGPUCompareFunction().always;
         this.mAxisColor[TransformAxisEnum.YZ] = yzPlaneMaterial.baseColor;
         this.mAxisMaterial[TransformAxisEnum.YZ] = yzPlaneMaterial;
 

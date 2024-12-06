@@ -5,7 +5,6 @@ import { BoxColliderShape } from "../../components/shape/BoxColliderShape";
 import { HitInfo } from "../../components/shape/ColliderShape";
 import { Object3D } from "../../core/entities/Object3D";
 import { PointerEvent3D } from "../../event/eventConst/PointerEvent3D";
-import { GPUCompareFunction } from "../../gfx/graphics/webGpu/WebGPUConst";
 import { UnLitMaterial } from "../../materials/UnLitMaterial";
 import { Color } from "../../math/Color";
 import { Matrix4 } from "../../math/Matrix4";

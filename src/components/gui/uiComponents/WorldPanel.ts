@@ -1,4 +1,4 @@
-import { GPUCompareFunction, View3D } from "../../..";
+import { getGPUCompareFunction, View3D } from "../../..";
 import { Object3D } from "../../../core/entities/Object3D";
 import { GUISpace } from "../GUIConfig";
 import { UIPanel } from "./UIPanel";
@@ -34,7 +34,7 @@ export class WorldPanel extends UIPanel {
   public set depthTest(value: boolean) {
     if (this._depthTest != value) {
       this._depthTest = value;
-      let compare = this.depthTest ? GPUCompareFunction.less_equal : GPUCompareFunction.always;
+      let compare = getGPUCompareFunction()[this.depthTest ? 'less_equal' : 'always'];
       for (let item of this._uiRenderer.materials) {
         item.depthCompare = compare;
       }

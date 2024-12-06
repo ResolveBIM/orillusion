@@ -1,5 +1,5 @@
 import { Texture } from '../gfx/graphics/webGpu/core/texture/Texture';
-import { GPUAddressMode, GPUTextureFormat } from '../gfx/graphics/webGpu/WebGPUConst';
+import { GPUAddressMode, GPUTextureFormat, getGPUCompareFunction } from '../gfx/graphics/webGpu/WebGPUConst';
 import { webGPUContext } from '../gfx/graphics/webGpu/Context3D';
 import { GPUContext } from '../gfx/renderJob/GPUContext';
 import { UUID } from '../util/Global';
@@ -86,7 +86,7 @@ export class RenderTexture extends Texture {
             this.textureBindingLayout.sampleType = `depth`;
             this.gpuSampler = webGPUContext.device.createSampler({});
             this.gpuSampler_comparison = webGPUContext.device.createSampler({
-                compare: 'less',
+                compare: getGPUCompareFunction().less,
                 label: "sampler_comparison"
             });
         } else if (this.format == GPUTextureFormat.depth24plus) {
@@ -99,7 +99,7 @@ export class RenderTexture extends Texture {
             this.textureBindingLayout.sampleType = `depth`;
             this.gpuSampler = webGPUContext.device.createSampler({});
             this.gpuSampler_comparison = webGPUContext.device.createSampler({
-                compare: 'less',
+                compare: getGPUCompareFunction().less,
                 label: "sampler_comparison"
             });
         } else {

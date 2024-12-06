@@ -1,5 +1,5 @@
 import { Vector3 } from '../..';
-import { GPUCompareFunction, GPUCullMode } from '../../gfx/graphics/webGpu/WebGPUConst';
+import { getGPUCompareFunction, GPUCullMode } from '../../gfx/graphics/webGpu/WebGPUConst';
 import { RenderShaderPass } from '../../gfx/graphics/webGpu/shader/RenderShaderPass';
 import { PassType } from '../../gfx/renderJob/passRenderer/state/PassType';
 
@@ -21,6 +21,6 @@ export class SkyGBufferPass extends RenderShaderPass {
         shaderState.frontFace = `ccw`;
         shaderState.cullMode = GPUCullMode.front;
         shaderState.depthWriteEnabled = false;
-        shaderState.depthCompare = GPUCompareFunction.less;
+        shaderState.depthCompare = getGPUCompareFunction().less;
     }
 }
