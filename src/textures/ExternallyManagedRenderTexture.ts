@@ -38,12 +38,12 @@ export class ExternallyManagedRenderTexture extends RenderTexture {
             throw new Error("Cannot update texture with different format.");
         }
 
-        // TODO rm
-        console.log("UPDATING TEXTURE", texture);
         this.width = texture.width;
         this.height = texture.height;
         this.gpuTexture = texture;
         this.view = texture.createView();
+        this.createTextureDescriptor(this.width, this.height, this.mipmapCount, this.format, this.usage, this.numberLayer, this.sampleCount);
+        this.noticeChange();
     }
 
     /**
@@ -58,31 +58,10 @@ export class ExternallyManagedRenderTexture extends RenderTexture {
      * be a no-op since this class doesn't manage the texture.
      */
     public resize(width: number, height: number) {
-        // TODO rm
-        console.error('Tried resizing a ExternallyManagedRenderTexture. This is not supported.');
-        // TODO might not need this for simple rendering
-        super.resize(width, height);
-        this._textureChange = false;
+        if (!this.gpuTexture) {
+            super.resize(width, height);
+        } else {
+            throw new Error('Repeated resizing not supported for ExternallyManagedRenderTexture.');
+        }
     }
-
-    /**
-     * This re-allocates the texture and therefore shouldn't be called ever
-     * for an externally-managed texture.
-     */
-    /*
-    public updateGPUTexture() {
-        throw new Error("Method not supported for ExternallyManagedRenderTexture.");
-    }
-    */
-
-    /**
-     * This requires reallocating a GPUTexture, and is therefore incompatible
-     * with this class's function as an unmanaged texture.
-     */
-    /*
-    public get useMipmap(): boolean {
-        throw new Error("Method not supported for ExternallyManagedRenderTexture.");
-    }
-    */
-
 }
