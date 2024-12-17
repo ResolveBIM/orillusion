@@ -1,4 +1,4 @@
-import { CEvent, Texture } from '../../..';
+import { CEvent, Engine3D, Texture } from '../../..';
 import { CEventDispatcher } from '../../../event/CEventDispatcher';
 import { CResizeEvent } from '../../../event/CResizeEvent';
 import { CanvasConfig } from './CanvasConfig';
@@ -20,6 +20,7 @@ export class Context3D extends CEventDispatcher {
     public canvasConfig: CanvasConfig;
     private _pixelRatio: number = 1.0;
     private _resizeEvent: CEvent;
+    private _debouncedResizeTimeoutId?: number;
 
     public get pixelRatio() {
         return this._pixelRatio;
@@ -121,13 +122,27 @@ export class Context3D extends CEventDispatcher {
 
         this._resizeEvent = new CResizeEvent(CResizeEvent.RESIZE, { width: this.windowWidth, height: this.windowHeight })
         const resizeObserver = new ResizeObserver(() => {
-            this.updateSize()
-            Texture.destroyTexture()
+            this.debouncedUpdateSize();
         });
 
         resizeObserver.observe(this.canvas);
         this.updateSize();
         return true;
+    }
+
+    public get isResizing(): boolean {
+        return !!this._debouncedResizeTimeoutId;
+    }
+
+    private debouncedUpdateSize() {
+        if (this._debouncedResizeTimeoutId) {
+            window.clearTimeout(this._debouncedResizeTimeoutId);
+            this._debouncedResizeTimeoutId = undefined;
+        }
+        this._debouncedResizeTimeoutId = window.setTimeout(() => {
+            this.updateSize();
+            this._debouncedResizeTimeoutId = undefined;
+        }, Engine3D.setting.render.debouncedResizeTimeoutMS);
     }
 
     public updateSize() {
@@ -143,6 +158,7 @@ export class Context3D extends CEventDispatcher {
             this._resizeEvent.data.width = this.windowWidth;
             this._resizeEvent.data.height = this.windowHeight;
             this.dispatchEvent(this._resizeEvent);
+            Texture.destroyTexture()
         }
     }
 }

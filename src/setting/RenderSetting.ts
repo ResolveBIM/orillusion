@@ -13,6 +13,7 @@ export type RenderSetting = {
     renderState_left: number;
     renderState_right: number;
     renderState_split: number;
+    debouncedResizeTimeoutMS: number;
     quadScale: number;
     hdrExposure: number;
     debugQuad: number;

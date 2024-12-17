@@ -129,6 +129,7 @@ export class Engine3D {
             renderState_left: 5,
             renderState_right: 5,
             renderState_split: 0.5,
+            debouncedResizeTimeoutMS: 100,
             quadScale: 1,
             hdrExposure: 1.5,
             debugQuad: -1,
