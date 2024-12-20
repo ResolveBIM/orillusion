@@ -127,9 +127,9 @@ export class TextFieldLayout {
       } else {
         if (char == '\n') {
         } else if (char == '\t') {
-          offsetX += unitSize;
+          offsetX += originSize;
         } else {
-          offsetX += halfUnitSize;
+          offsetX += originSize * 0.5;
         }
       }
       line.width = offsetX;
