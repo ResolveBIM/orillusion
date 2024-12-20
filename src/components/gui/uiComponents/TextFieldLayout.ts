@@ -123,15 +123,8 @@ export class TextFieldLayout {
         quad.y = (fontData.base - charSprite.height - charSprite.yoffset - fontData.base) * realSize + transformOffsetY;
         quad.width = charSprite.offsetSize.width * realSize;
         quad.height = charSprite.offsetSize.height * realSize;
-        offsetX += charSprite.xadvance;
-      } else {
-        if (char == '\n') {
-        } else if (char == '\t') {
-          offsetX += originSize;
-        } else {
-          offsetX += originSize * 0.5;
-        }
       }
+      offsetX += fonts.getXadvance(fontName, originSize, char, charSprite);
       line.width = offsetX;
       line.quadList.push(quad);
       line.charList.push(char);

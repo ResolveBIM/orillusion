@@ -24,6 +24,17 @@ class Fonts {
         let list = this.fntCache[key];
         return list ? list[id] : this.fntCache[` `];
     }
+
+    getXadvance(font: string, size: number, char: string, charSprite?: GUISprite): number {
+        let sprite = charSprite || this.getFnt(font, size, char.charCodeAt(0).toString());
+        return sprite
+            ? sprite.xadvance
+            : char === '\n'
+            ? 0
+            : char === '\t'
+            ? size
+            : size * 0.5;
+    }
 }
 
 export let fonts: Fonts = new Fonts();
