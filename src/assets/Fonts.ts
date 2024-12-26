@@ -69,17 +69,13 @@ class Fonts {
         let lineWidth = 0;
         let i = 0;
 
-        console.log('wrapping');
-
         const flushCurrentLine = () => {
             let lastLine = text.substring(lineStart, lastDelimIndex + 1);
-            console.log("FLUSHING", i, lineStart, lastDelimIndex, lastLine);
             outputLines.push(lastLine);
             lineStart = lastDelimIndex + 1;
             lineWidth = 0;
             // Strip leading whitespace
             while (stripLeadingWhitespace.includes(text[lineStart])) {
-                console.log("SKIPPING CHAR");
                 i = lastDelimIndex = lineStart;
                 lineStart = i + 1;
             }
@@ -87,11 +83,9 @@ class Fonts {
 
         for (; i < text.length; i++) {
             let char = text.charAt(i);
-            console.log('CHAR:', char);
 
             // Handle existing line breaks
             if (lineBreakChars.includes(char)) {
-                console.log("LINE BREAK CHAR");
                 lastDelimIndex = i - 1;
                 flushCurrentLine();
                 continue;
@@ -99,23 +93,18 @@ class Fonts {
 
             // Delimiters mark where we can end a line
             if (wordWrapDelimiters.includes(char)) {
-                console.log("DELIM CHAR");
                 lastDelimIndex = i;
             }
             lineWidth += this.getXadvance(font, size, char);
-            console.log("LINE WIDTH:", lineWidth);
 
             // Insert a line break if the line is too long
             if (lineWidth > maxWidth) {
-                console.log("TOO LONG", i, lineStart, lastDelimIndex);;
                 // If the line is just a single character, it won't fit anyway, so add it
                 // and start a new line. If it's just a single word, force it to wrap and
                 // start a new line.
                 if (i === lineStart) {
-                    console.log("FORCE INCLUDE SINGLE CHAR");
                     lastDelimIndex = i;
                 } else if (lastDelimIndex < lineStart) {
-                    console.log("FORCE INCLUDE PARTIAL WORD");
                     i--;
                     lastDelimIndex = i;
                 }
