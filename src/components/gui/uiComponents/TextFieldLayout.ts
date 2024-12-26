@@ -75,7 +75,7 @@ export class TextFieldLayout {
     let fontData = fonts.getFontData(target.font, originSize);
     let realSize = target.fontSize / originSize;
 
-    this.makeTextLine(target.uiTransform, target.alignment, lineList, target.font, fontData, target.text, realSize, originSize, target.lineSpacing);
+    this.makeTextLine(target.uiTransform, target.alignment, lineList, target.font, fontData, target.text, realSize, originSize, target.lineSpacing, target.wordWrapDelimiters);
     return lineList;
   }
 
@@ -89,6 +89,7 @@ export class TextFieldLayout {
     realSize: number,
     originSize: number,
     lineSpacing: number,
+    wordWrapDelimiters: string,
   ): void {
     let curLineIndex: number = -1;
     let offsetX = 0;
@@ -208,19 +209,24 @@ export class TextFieldLayout {
 
     //Parse text
     let parseText = (): void => {
-      let curLine: TextFieldLine = null;
-      let totalLength: number = text.length;
-      for (let i = 0; i < totalLength; i++) {
-        curLine ||= makeLine();
-        let char = text.charAt(i);
-        if (char == '\n' || char == '\t') {
-          //wrap symbol
-          curLine = null;
-        } else {
-          makeQuad(char, curLine);
-          let autoWrap = curLine.width + halfUnitSize >= maxTextWidthReal;
-          if (autoWrap) {
-            curLine = makeLine();
+      let wrappedText: string[] = wordWrapDelimiters
+        ? fonts.wordWrap(fontName, originSize, maxTextWidthReal, text, { wordWrapDelimiters })
+        : [text];
+      for (const textLine of wrappedText) {
+        let curLine: TextFieldLine = null;
+        let totalLength: number = textLine.length;
+        for (let i = 0; i < totalLength; i++) {
+          curLine ||= makeLine();
+          let char = textLine.charAt(i);
+          if (char == '\n' || char == '\t') {
+            //wrap symbol
+            curLine = null;
+          } else {
+            makeQuad(char, curLine);
+            let autoWrap = curLine.width + halfUnitSize >= maxTextWidthReal;
+            if (autoWrap) {
+              curLine = makeLine();
+            }
           }
         }
       }

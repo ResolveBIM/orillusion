@@ -13,6 +13,7 @@ export class UITextField extends UIRenderAble {
     private _originSize: number = 42;
     private _alignment: TextAnchor = 0;
     private _lineSpacing: number = 1;
+    private _wordWrapDelimiters: string = '';
     private _text: string = '';
     private readonly _color: Color = new Color(1, 1, 1, 1);
 
@@ -39,6 +40,17 @@ export class UITextField extends UIRenderAble {
 
     public get originSize(): number {
         return this._originSize;
+    }
+
+    public get wordWrapDelimiters(): string {
+        return this._wordWrapDelimiters;
+    }
+
+    public set wordWrapDelimiters(value: string) {
+        if (this._wordWrapDelimiters !== value) {
+            this._wordWrapDelimiters = value;
+            this.layoutText();
+        }
     }
 
     public get font(): string {
