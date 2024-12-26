@@ -42,6 +42,13 @@ export class UITextField extends UIRenderAble {
         return this._originSize;
     }
 
+    public set originSize(value: number) {
+        if (this._originSize != value) {
+            this._originSize = value;
+            this.layoutText();
+        }
+    }
+
     public get wordWrapDelimiters(): string {
         return this._wordWrapDelimiters;
     }
