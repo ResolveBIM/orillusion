@@ -13,7 +13,7 @@ export class RTFrame {
 
     public depthViewIndex: number = 0;
     public depthCleanValue: number = getDepthClearValue('far');
-    private _depthLoadOp: GPULoadOp = `clear`;
+    protected _depthLoadOp: GPULoadOp = `clear`;
     public isOutTarget: boolean = true;
 
     public get depthLoadOp() {

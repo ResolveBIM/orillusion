@@ -20,14 +20,17 @@ import { GUIPassRenderer } from '../passRenderer/color/GUIPassRenderer';
  * @group engine3D
  */
 export class ForwardRenderJob extends RendererJob {
+    public colorPassRendererClass: typeof ColorPassRenderer;
+
     constructor(view: View3D) {
         super(view);
+        this.colorPassRendererClass = ColorPassRenderer;
     }
 
     public start(): void {
         super.start();
         {
-            let colorPassRenderer = new ColorPassRenderer();
+            let colorPassRenderer = new this.colorPassRendererClass();
             let rtFrame = GBufferFrame.getGBufferFrame(GBufferFrame.colorPass_GBuffer);
 
             if (Engine3D.setting.render.zPrePass) {

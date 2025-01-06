@@ -15,7 +15,7 @@ export class GBufferFrame extends RTFrame {
     // public static bufferTexture: boolean = false;
 
     private _colorBufferTex: RenderTexture;
-    private _compressGBufferTex: RenderTexture;
+    protected _compressGBufferTex: RenderTexture;
 
     constructor() {
         super([], []);

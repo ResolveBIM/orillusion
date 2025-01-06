@@ -68,7 +68,6 @@ export class ExternallyManagedGBufferFrame extends GBufferFrame {
             colorTexture.clear,
             true,
         );
-        // @ts-ignore
         this._compressGBufferTex = compressTexture;
         attachments.push(compressTexture);
         rtDescriptors.push(new RTDescriptor());
