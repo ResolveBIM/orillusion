@@ -1,6 +1,5 @@
 import { Camera3D } from "../../core/Camera3D";
 import { GeometryBase } from "../../core/geometry/GeometryBase";
-import { devLogger } from "../../util/DevLogger";
 import { ProfilerUtil } from "../../util/ProfilerUtil";
 import { webGPUContext } from "../graphics/webGpu/Context3D";
 import { GlobalBindGroup } from "../graphics/webGpu/core/bindGroups/GlobalBindGroup";
@@ -21,17 +20,8 @@ export class GPUContext {
     public static geometryCount: number = 0;
     public static pipelineCount: number = 0;
     public static matrixCount: number = 0;
-    private static _lastRenderPassState: RendererPassState;
+    public static lastRenderPassState: RendererPassState;
     public static LastCommand: GPUCommandEncoder;
-
-    public static get lastRenderPassState(): RendererPassState {
-        return this._lastRenderPassState;
-    }
-
-    public static set lastRenderPassState(value: RendererPassState) {
-        devLogger.stackLog("lastRenderPassState", value);
-        this._lastRenderPassState = value;
-    }
 
     /**
      * renderPipeline before render need bind pipeline

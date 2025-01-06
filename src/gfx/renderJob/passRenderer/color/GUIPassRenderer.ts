@@ -1,7 +1,6 @@
 import { Engine3D } from "../../../../Engine3D";
 import { RenderNode } from "../../../../components/renderer/RenderNode";
 import { View3D } from "../../../../core/View3D";
-import { devLogger } from "../../../../util/DevLogger";
 import { GlobalBindGroup } from "../../../graphics/webGpu/core/bindGroups/GlobalBindGroup";
 import { GPUContext } from "../../GPUContext";
 import { EntityCollect } from "../../collect/EntityCollect";
@@ -30,7 +29,6 @@ export class GUIPassRenderer extends RendererBase {
         let command = GPUContext.beginCommandEncoder();
         let src = GPUContext.lastRenderPassState.getLastRenderTexture();
         let dest = GBufferFrame.getGUIBufferFrame().getColorTexture();
-        devLogger.log('GUI pass src:', src);
         GPUContext.copyTexture(command, src, dest);
         GPUContext.endCommandEncoder(command);
     }
