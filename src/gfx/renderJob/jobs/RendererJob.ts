@@ -21,6 +21,7 @@ import { ReflectionRenderer } from '../passRenderer/cubeRenderer/ReflectionRende
 import { PassType } from '../passRenderer/state/PassType';
 import { ProfilerUtil } from '../../../util/ProfilerUtil';
 import { FXAAPost } from '../post/FXAAPost';
+import { devLogger } from '../../../util/DevLogger';
 
 /**
  * render jobs 
@@ -213,11 +214,15 @@ export class RendererJob {
         this.clusterLightingRender.render(view, this.occlusionSystem);
 
         if (this.shadowMapPassRenderer) {
+            // TODO rm
+            // This runs
             ShadowLightsCollect.update(view);
             this.shadowMapPassRenderer.render(view, this.occlusionSystem);
         }
 
         if (this.pointLightShadowRenderer) {
+            // TODO rm
+            // This runs
             this.pointLightShadowRenderer.render(view, this.occlusionSystem);
         }
 
@@ -233,6 +238,8 @@ export class RendererJob {
 
 
         let passList = this.rendererMap.getAllPassRenderer();
+        // TODO rm REFLECTION AND COLOR PASS RUN HERE
+        devLogger.log("passList", passList);
         for (let i = 0; i < passList.length; i++) {
             const renderer = passList[i];
             renderer.compute(view, this.occlusionSystem);
