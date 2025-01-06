@@ -11,9 +11,15 @@ export class UITextField extends UIRenderAble {
     private _font: string = '微软雅黑';
     private _fontSize: number = 14;
     private _originSize: number = 42;
+    private _widthRange?: [number, number];
+    private _heightRange?: [number, number];
+    private _padding: number = 0;
+    private _hideOverflow: boolean = true;
     private _alignment: TextAnchor = 0;
     private _lineSpacing: number = 1;
-    private _wordWrapDelimiters: string = '';
+    private _lineBreakChars?: string = '\n';
+    private _printedDelimiters?: string = '-';
+    private _strippableDelimiters?: string = ' \t';
     private _text: string = '';
     private readonly _color: Color = new Color(1, 1, 1, 1);
 
@@ -38,6 +44,58 @@ export class UITextField extends UIRenderAble {
         return this;
     }
 
+    public get widthRange(): [number, number] | undefined {
+        return this._widthRange;
+    }
+
+    public set widthRange(value: [number, number] | undefined) {
+        if (
+            (this._widthRange === undefined && value === undefined)
+                || (this._widthRange?.[0] === value?.[0] && this._widthRange?.[1] === value?.[1])
+        ) {
+            return;
+        }
+        this._widthRange = value;
+        this.layoutText();
+    }
+
+    public get heightRange(): [number, number] | undefined {
+        return this._heightRange;
+    }
+
+    public set heightRange(value: [number, number] | undefined) {
+        if (
+            (this._heightRange === undefined && value === undefined)
+                || (this._heightRange?.[0] === value?.[0] && this._heightRange?.[1] === value?.[1])
+        ) {
+            return;
+        }
+        this._heightRange = value;
+        this.layoutText();
+    }
+
+    public get padding(): number {
+        return this._padding;
+    }
+
+    public set padding(value: number) {
+        if (this._padding != value) {
+            this._padding = value;
+            this.layoutText();
+        }
+    }
+
+    public get hideOverflow(): boolean {
+        return this._hideOverflow;
+    }
+
+    public set hideOverflow(value: boolean) {
+        if (this._hideOverflow != value) {
+            this._hideOverflow = value;
+            this.layoutText();
+        }
+    }
+
     public get originSize(): number {
         return this._originSize;
     }
@@ -49,13 +107,35 @@ export class UITextField extends UIRenderAble {
         }
     }
 
-    public get wordWrapDelimiters(): string {
-        return this._wordWrapDelimiters;
+    public get lineBreakChars(): string {
+        return this._lineBreakChars;
     }
 
-    public set wordWrapDelimiters(value: string) {
-        if (this._wordWrapDelimiters !== value) {
-            this._wordWrapDelimiters = value;
+    public set lineBreakChars(value: string) {
+        if (this._lineBreakChars !== value) {
+            this._lineBreakChars = value;
+            this.layoutText();
+        }
+    }
+
+    public get printedDelimiters(): string {
+        return this._printedDelimiters;
+    }
+
+    public set printedDelimiters(value: string) {
+        if (this._printedDelimiters !== value) {
+            this._printedDelimiters = value;
+            this.layoutText();
+        }
+    }
+
+    public get strippableDelimiters(): string {
+        return this._strippableDelimiters;
+    }
+
+    public set strippableDelimiters(value: string) {
+        if (this._strippableDelimiters !== value) {
+            this._strippableDelimiters = value;
             this.layoutText();
         }
     }

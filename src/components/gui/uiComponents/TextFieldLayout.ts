@@ -7,6 +7,7 @@ import { FontInfo } from "../../../loader/parser/FontParser";
 import { GUIQuad } from "../core/GUIQuad";
 import { UITextField } from "./UITextField";
 import { UITransform } from "./UITransform";
+import { WordWrapParams, WordWrapper } from "./WordWrapper";
 
 export enum TextAnchor {
   /// <summary>
@@ -74,9 +75,65 @@ export class TextFieldLayout {
     let originSize = target.originSize;
     let fontData = fonts.getFontData(target.font, originSize);
     let realSize = target.fontSize / originSize;
+    let realMaxWidth = target.widthRange ? target.widthRange[1] : target.uiTransform.width;
+    let realMaxHeight = target.heightRange ? target.heightRange[1] : target.uiTransform.height;
+    let { lineBreakChars, printedDelimiters, strippableDelimiters } = target;
+    let wordWrapParams: WordWrapParams = { lineBreakChars, printedDelimiters, strippableDelimiters };
 
-    this.makeTextLine(target.uiTransform, target.alignment, lineList, target.font, fontData, target.text, realSize, originSize, target.lineSpacing, target.wordWrapDelimiters);
+    let wrappedLines = this.wrapLinesAndFitToContent(
+      target.text,
+      target.uiTransform,
+      target.font,
+      target.originSize,
+      target.fontSize,
+      target.lineSpacing,
+      wordWrapParams,
+      target.hideOverflow,
+      target.padding,
+      target.widthRange,
+      target.heightRange,
+    );
+    this.makeTextLine(target.uiTransform, target.alignment, lineList, target.font, fontData, wrappedLines, realSize, originSize, target.lineSpacing, target.padding);
     return lineList;
+  }
+
+  private wrapLinesAndFitToContent(
+    text: string,
+    transform: UITransform,
+    fontName: string,
+    originSize: number,
+    fontSize: number,
+    lineSpacing: number,
+    wordWrapParams: WordWrapParams,
+    hideOverflow: boolean,
+    padding: number,
+    widthRange?: [number, number],
+    heightRange?: [number, number],
+  ): string[] {
+    let realMaxWidth = widthRange ? widthRange[1] : transform.width;
+    let realMaxHeight = heightRange ? heightRange[1] : transform.height;
+    let originSizeOverFontSize = originSize / fontSize;
+    let maxTextWidthFontUnits = (realMaxWidth - 2 * padding) * originSizeOverFontSize;
+    let maxTextHeightFontUnits = (realMaxHeight - 2 * padding) * originSizeOverFontSize;
+    let maxLineCount: number = hideOverflow
+      ? Math.floor(maxTextHeightFontUnits / (originSize * lineSpacing))
+      : Infinity;
+
+    let { wrappedLines, widestLineWidth } = new WordWrapper(
+      fontName, originSize, maxTextWidthFontUnits, text, wordWrapParams
+    );
+    wrappedLines.splice(maxLineCount);
+
+    // Resize to content if needed
+    if (widthRange || heightRange) {
+      const contentWidth = widestLineWidth * fontSize + 2 * padding;
+      const contentHeight = wrappedLines.length * lineSpacing * fontSize + 2 * padding;
+      const newWidth = widthRange ? Math.min(widthRange[1], contentWidth) : transform.width;
+      const newHeight = heightRange ? Math.min(heightRange[1], contentHeight) : transform.height;
+      transform.resize(newWidth, newHeight);
+    }
+
+    return wrappedLines;
   }
 
   private makeTextLine(
@@ -85,22 +142,21 @@ export class TextFieldLayout {
     lineList: TextFieldLine[],
     fontName: string,
     fontData: FontInfo,
-    text: string,
+    wrappedLines: string[],
     realSize: number,
     originSize: number,
     lineSpacing: number,
-    wordWrapDelimiters: string,
+    padding: number,
   ): void {
     let curLineIndex: number = -1;
     let offsetX = 0;
 
     let unitSize = originSize * realSize;
-    let halfUnitSize = unitSize * 0.5;
-    let maxTextWidthReal = transform.width / realSize;
-    let maxTextHeightReal = transform.height / realSize;
+    let maxTextWidthReal = (transform.width - 2 * padding) / realSize;
+    let maxTextHeightReal = (transform.height - 2 * padding) / realSize;
 
-    let transformOffsetX = 0;
-    let transformOffsetY = transform.height;
+    let transformOffsetX = padding;
+    let transformOffsetY = transform.height - padding;
 
     //new line
     let makeLine = (): TextFieldLine => {
@@ -120,7 +176,7 @@ export class TextFieldLayout {
       if (charSprite) {
         quad = GUIQuad.spawnQuad();
         quad.sprite = charSprite;
-        quad.x = (offsetX + charSprite.xoffset) * realSize - transformOffsetX;
+        quad.x = (offsetX + charSprite.xoffset) * realSize + transformOffsetX;
         quad.y = (fontData.base - charSprite.height - charSprite.yoffset - fontData.base) * realSize + transformOffsetY;
         quad.width = charSprite.offsetSize.width * realSize;
         quad.height = charSprite.offsetSize.height * realSize;
@@ -209,25 +265,11 @@ export class TextFieldLayout {
 
     //Parse text
     let parseText = (): void => {
-      let wrappedText: string[] = wordWrapDelimiters
-        ? fonts.wordWrap(fontName, originSize, maxTextWidthReal, text, { wordWrapDelimiters })
-        : [text];
-      for (const textLine of wrappedText) {
-        let curLine: TextFieldLine = null;
-        let totalLength: number = textLine.length;
-        for (let i = 0; i < totalLength; i++) {
-          curLine ||= makeLine();
-          let char = textLine.charAt(i);
-          if (char == '\n' || char == '\t') {
-            //wrap symbol
-            curLine = null;
-          } else {
-            makeQuad(char, curLine);
-            let autoWrap = curLine.width + halfUnitSize >= maxTextWidthReal;
-            if (autoWrap) {
-              curLine = makeLine();
-            }
-          }
+      let curLine: TextFieldLine = null;
+      for (const textLine of wrappedLines) {
+        curLine = makeLine();
+        for (const char of textLine) {
+          makeQuad(char, curLine);
         }
       }
     };
