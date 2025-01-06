@@ -3,6 +3,7 @@ import { DEGREES_TO_RADIANS, clamp, RADIANS_TO_DEGREES } from './MathUtil';
 import { Orientation3D } from './Orientation3D';
 import { Quaternion } from './Quaternion';
 import { Vector3 } from './Vector3';
+import { Engine3D } from '..';
 const EPSILON: number = 0.000001;
 
 /**
@@ -583,9 +584,32 @@ export class Matrix4 {
      * @version Orillusion3D  0.5.1
      */
     public perspective(fov: number, aspect: number, zn: number, zf: number) {
+        // column-major
         let data = this.rawData;
         let angle: number = (fov * DEGREES_TO_RADIANS) / 2.0;
         let f = Math.cos(angle) / Math.sin(angle);
+
+        // components of the lower-right block matrix between z and w.
+        let [
+            m33, m34,
+            m43, m44,
+        ] = [
+            zf / (zf - zn), -zn * zf / (zf - zn),
+                         1,                    0,
+        ];
+        // if using a reversed z-buffer, apply z -> 1 - z transform. same as
+        // left-multiplying zw block by the matrix
+        //  | -1  1 |
+        //  |  1  0 |
+        let [
+            m33r, m34r,
+            m43r, m44r,
+        ] = [
+            -m33 + m43, -m34,
+                   m43,  m44,
+        ];
+        let reverseZ = Engine3D.setting.render.useReversedDepth;
+
         // 0.5 / tan
         data[0] = -f / aspect;
         // data[0] = xScale;
@@ -600,13 +624,13 @@ export class Matrix4 {
 
         data[8] = 0;
         data[9] = 0;
-        data[10] = zf / (zf - zn);
-        data[11] = 1;
+        data[10] = reverseZ ? m33r : m33;
+        data[11] = reverseZ ? m43r : m43;
 
         data[12] = 0;
         data[13] = 0;
-        data[14] = (-zn * zf) / (zf - zn);
-        data[15] = 0;
+        data[14] = reverseZ ? m34r : m34;
+        data[15] = reverseZ ? m44r : m44;
     }
 
     public perspective3(fov: number, aspect: number, near: number, far: number) {
