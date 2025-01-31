@@ -30,7 +30,7 @@
     },
     "scripts": {
         "dev": "vite",
-        "prepare": "npm install && npm run build",
+        "prepare": "npm run build",
         "build": "tsc --p tsconfig.build.json && vite build && npm run build:types && npm run minify",
         "build:test": "tsc --p tsconfig.build.json && vite build && npm run build:packages",
         "build:packages": "npm run build:physics && npm run build:media && npm run build:stats && npm run build:particle && npm run build:graphic && npm run build:geometry",
