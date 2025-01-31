@@ -30,6 +30,7 @@
     },
     "scripts": {
         "dev": "vite",
+        "prepare": "npm install && npm run build",
         "build": "tsc --p tsconfig.build.json && vite build && npm run build:types && npm run minify",
         "build:test": "tsc --p tsconfig.build.json && vite build && npm run build:packages",
         "build:packages": "npm run build:physics && npm run build:media && npm run build:stats && npm run build:particle && npm run build:graphic && npm run build:geometry",
@@ -57,6 +58,7 @@
         "@webgpu/types": "^0.1.40",
         "conventional-changelog-cli": "^2.2.2",
         "electron": "^31.1.0",
+        "esbuild": "0.24.0",
         "typedoc": "^0.25.7",
         "typedoc-plugin-markdown": "^3.17.1",
         "typescript": "^5.3.3",
