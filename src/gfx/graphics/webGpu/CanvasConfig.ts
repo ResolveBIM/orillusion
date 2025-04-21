@@ -28,4 +28,8 @@ export type CanvasConfig = {
      * a canvas background when skybox is hide/disabled and CanvasConfig.alpha is true
      */
     backgroundImage?: string;
+    /**
+     * additional required features for GPU device
+     */
+    requiredDeviceFeatures?: GPUFeatureName[];
 };

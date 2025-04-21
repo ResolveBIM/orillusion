@@ -94,6 +94,7 @@ export class Context3D extends CEventDispatcher {
                 "depth32float-stencil8",
                 "indirect-first-instance",
                 "rg11b10ufloat-renderable",
+                ...(canvasConfig?.requiredDeviceFeatures || []),
             ],
             requiredLimits: {
                 minUniformBufferOffsetAlignment: 256,
