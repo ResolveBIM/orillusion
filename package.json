@@ -1,6 +1,6 @@
 {
     "name": "@orillusion/core",
-    "version": "v0.8.3-resolve.annotations.2",
+    "version": "v0.8.3-resolve.annotations.3",
     "author": "Orillusion",
     "description": "Orillusion WebGPU Engine",
     "type": "module",
