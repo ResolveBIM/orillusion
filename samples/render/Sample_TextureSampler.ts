@@ -79,7 +79,7 @@ class Sample_TextureSample {
             filter[GPUFilterMode.linear] = GPUFilterMode.linear;
 
             // enum GPUCompareFunction
-            let depthCompare = Object.fromEntries(Object.values(getGPUCompareFunction()).map(v => [v, v]));
+            let { ...depthCompare } = getGPUCompareFunction();
 
             // GUI
             GUIHelp.addFolder("Texture Sampler");
