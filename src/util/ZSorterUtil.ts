@@ -1,4 +1,5 @@
-﻿import { Camera3D } from '../core/Camera3D';
+﻿import { Engine3D } from '..';
+import { Camera3D } from '../core/Camera3D';
 import { Object3D } from '../core/entities/Object3D';
 import { Vector3 } from '../math/Vector3';
 
@@ -46,9 +47,11 @@ export class ZSorterUtil {
             this._zSortList.push(zSortItemObject3D);
         }
 
-        this._zSortList.sort((a, b) => {
-            return a.z - b.z > 0 ? 1 : -1;
-        });
+        const sortFn: (a: { z: number }, b: { z: number }) => number = Engine3D.setting.render.useReversedDepth
+            ? (a, b) => b.z - a.z
+            : (a, b) => a.z - b.z;
+
+        this._zSortList.sort(sortFn);
 
         result ||= [];
         for (let item of this._zSortList) {
@@ -58,6 +61,14 @@ export class ZSorterUtil {
         return result;
     }
 
+    /**
+     * Return the z-buffer value of the object3D in the camera's view coordinates. Note that
+     * the returned value will NOT correct for the `useReversedDepth` render setting, i.e. the
+     * order will flip if you are using reversed depth buffers; this allows you to take
+     * advantage of the improved z-fighting properties of reversed depth buffers for distant
+     * objects, but requires flipping the order of your comparison functions when using
+     * reversed depth.
+     */
     public worldToCameraDepth(obj3d: Object3D, camera?: Camera3D): number {
         camera ||= obj3d.transform.view3D.camera;
         let z: number = 0;
