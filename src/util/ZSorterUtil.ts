@@ -48,8 +48,8 @@ export class ZSorterUtil {
         }
 
         const sortFn: (a: { z: number }, b: { z: number }) => number = Engine3D.setting.render.useReversedDepth
-            ? (a, b) => (a.z - b.z > 0 ? -1 : 1)
-            : (a, b) => (a.z - b.z > 0 ? 1 : -1);
+            ? (a, b) => b.z - a.z
+            : (a, b) => a.z - b.z;
 
         this._zSortList.sort(sortFn);
 

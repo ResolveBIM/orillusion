@@ -280,8 +280,8 @@ export class EntityCollect {
             }
 
             const sortFn: (a: RenderNode, b: RenderNode) => number = Engine3D.setting.render.useReversedDepth
-                ? (a, b) => (a['__renderOrder'] - b['__renderOrder'] > 0 ? -1 : 1)
-                : (a, b) => (a['__renderOrder'] - b['__renderOrder'] > 0 ? 1 : -1);
+                ? (a, b) => b['__renderOrder'] - a['__renderOrder']
+                : (a, b) => a['__renderOrder'] - b['__renderOrder'];
             renderList.sort(sortFn);
         }
         return this;
