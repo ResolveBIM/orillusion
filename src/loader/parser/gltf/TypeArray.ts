@@ -1,6 +1,6 @@
-const isArrayBuffer = window.SharedArrayBuffer
+const isArrayBuffer = globalThis.SharedArrayBuffer
     ? function isArrayBufferOrSharedArrayBuffer(ary) {
-        return ary && ary.buffer && (ary.buffer instanceof ArrayBuffer || ary.buffer instanceof window.SharedArrayBuffer);
+        return ary && ary.buffer && (ary.buffer instanceof ArrayBuffer || ary.buffer instanceof globalThis.SharedArrayBuffer);
     }
     : function isArrayBuffer(ary) {
         return ary && ary.buffer && ary.buffer instanceof ArrayBuffer;
