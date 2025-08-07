@@ -78,17 +78,16 @@ export function IsEditorInspector<T extends object>(instance: T): Map<string, an
 
 
 
-
 export function RegisterComponent(cls, key, p1?, p2?, p3?): any {
-    let dic: { [name: string]: any } = window['__Component__'];
+    let dic: { [name: string]: any } = globalThis['__Component__'];
     if (!dic) {
-        dic = window['__Component__'] = {};
+        dic = globalThis['__Component__'] = {};
     }
     dic[key] = cls;
 }
 
 export function GetComponentClass(name: string) {
-    let coms = window['__Component__'];
+    let coms = globalThis['__Component__'];
     if (coms[name]) {
         return coms[name];
     }
@@ -96,15 +95,15 @@ export function GetComponentClass(name: string) {
 }
 
 export function RegisterShader(cls, key, p1?, p2?, p3?): any {
-    let dic: { [name: string]: any } = window['__shader__'];
+    let dic: { [name: string]: any } = globalThis['__shader__'];
     if (!dic) {
-        dic = window['__shader__'] = {};
+        dic = globalThis['__shader__'] = {};
     }
     dic[key] = cls;
 }
 
 export function GetShader(name: string) {
-    let coms = window['__shader__'];
+    let coms = globalThis['__shader__'];
     if (coms[name]) {
         return coms[name];
     }
