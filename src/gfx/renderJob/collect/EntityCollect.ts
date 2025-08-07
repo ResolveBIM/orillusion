@@ -278,9 +278,11 @@ export class EntityCollect {
                 //resume unchange status
                 renderNode.isRenderOrderChange = false;
             }
-            renderList.sort((a: RenderNode, b: RenderNode) => {
-                return a['__renderOrder'] > b['__renderOrder'] ? 1 : -1;
-            });
+
+            const sortFn: (a: RenderNode, b: RenderNode) => number = Engine3D.setting.render.useReversedDepth
+                ? (a, b) => b['__renderOrder'] - a['__renderOrder']
+                : (a, b) => a['__renderOrder'] - b['__renderOrder'];
+            renderList.sort(sortFn);
         }
         return this;
     }

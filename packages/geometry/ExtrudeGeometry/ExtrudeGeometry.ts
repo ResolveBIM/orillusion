@@ -1,4 +1,4 @@
-import { GeometryBase, Vector2, VertexAttributeName } from "@orillusion/core";
+import { GeometryBase, Vector2, Vector3, VertexAttributeName } from "@orillusion/core";
 import { Shape2D } from "./Shape2D";
 import { ShapeUtils } from "./ShapeUtils";
 
@@ -11,6 +11,7 @@ export type ExtrudeGeometryArgs = {
     bevelSize?: number;
     bevelOffset?: number;
     bevelSegments?: number;
+    anchorPoint?: Vector3;
 }
 
 export class ExtrudeGeometry extends GeometryBase {
@@ -19,7 +20,7 @@ export class ExtrudeGeometry extends GeometryBase {
     protected verticesArray: number[] = [];
     protected uvArray: number[] = [];
 
-    constructor(shapes?: Shape2D[], options?) {
+    constructor(shapes?: Shape2D[], options?: ExtrudeGeometryArgs) {
         super();
         this.options = options;
         this.shapes = shapes;
@@ -28,17 +29,54 @@ export class ExtrudeGeometry extends GeometryBase {
         }
     }
 
+    protected getExtractPointsAndBoundingSize(shapes: Shape2D[], options: ExtrudeGeometryArgs): { BoundingSize: { min: Vector3; max: Vector3; }, ShapePoints: { shape: Vector2[]; holes: Vector2[][]; }[] } {
+        const depth: number = options.depth !== undefined ? options.depth : 1;
+        const curveSegments: number = options.curveSegments !== undefined ? options.curveSegments : 12;
+        let minPoint: Vector3 = new Vector3(Infinity, Infinity, depth > 0 ? 0 : depth);
+        let maxPoint: Vector3 = new Vector3(-Infinity, -Infinity, depth < 0 ? 0 : depth);
+        let shapePointsArray = [];
+        for (let shape of this.shapes) {
+            const shapePoints = shape.extractPoints(curveSegments);
+            shapePointsArray.push(shapePoints);
+            let vertices = shapePoints.shape;
+            for (let i = 0; i < vertices.length; i++) {
+                const p = vertices[i];
+                if (p.x < minPoint.x)
+                    minPoint.x = p.x;
+                if (p.y < minPoint.y)
+                    minPoint.y = p.y;
+
+                if (p.x > maxPoint.x)
+                    maxPoint.x = p.x;
+                if (p.y > maxPoint.y)
+                    maxPoint.y = p.y;
+            }
+        }
+
+        return {
+            ShapePoints: shapePointsArray,
+            BoundingSize: { min: minPoint, max: maxPoint },
+        }
+    }
+
     protected buildGeometry(options: ExtrudeGeometryArgs) {
         this.verticesArray = [];
         this.uvArray = [];
 
+        let anchorPoint: Vector3 = options.anchorPoint !== undefined ? options.anchorPoint : new Vector3(0, 0, 0.5);
+        const result = this.getExtractPointsAndBoundingSize(this.shapes, options);
+        const offsetSize = result.BoundingSize.min.subtract(result.BoundingSize.max);
+        offsetSize.multiply(anchorPoint, offsetSize);
+
         for (let shape of this.shapes) {
-            this.addShape(shape, options);
+            this.addShape(shape, options, offsetSize);
         }
 
         const indices = new Uint32Array(this.verticesArray.length / 3);
-        for (let i = 0; i < indices.length; i++) {
+        for (let i = 0; i < indices.length; i+=3) {
             indices[i] = i;
+            indices[i + 1] = i + 2;
+            indices[i + 2] = i + 1;
         }
 
         this.setIndices(indices);
@@ -61,7 +99,7 @@ export class ExtrudeGeometry extends GeometryBase {
         });
     }
 
-    protected addShape(shape: Shape2D, options: ExtrudeGeometryArgs) {
+    protected addShape(shape: Shape2D, options: ExtrudeGeometryArgs, offsetSize: Vector3) {
         const verticesArray = this.verticesArray;
         const uvArray = this.uvArray;
         const self = this;
@@ -87,15 +125,31 @@ export class ExtrudeGeometry extends GeometryBase {
         const shapePoints = shape.extractPoints(curveSegments);
         let vertices = shapePoints.shape;
         const holes = shapePoints.holes;
-        const reverse = !ShapeUtils.isClockWise(vertices);
 
+        for (let i = 0; i < vertices.length; i++) {
+            const p = vertices[i];
+            p.x += offsetSize.x;
+            p.y += offsetSize.y;
+        }
+        for (let i = 0; i < holes.length; i++) {
+            const holeV = holes[i];
+            for (let j = 0; j < holeV.length; j++) {
+                const p = holeV[j];
+                p.x += offsetSize.x;
+                p.y += offsetSize.y;
+            }
+        }
+
+        // make sure shape is CW
+        const reverse = !ShapeUtils.isClockWise(vertices);
         if (reverse) {
             vertices = vertices.reverse();
-            for (let i = 0; i < holes.length; i++) {
-                const hole = holes[i];
-                if (ShapeUtils.isClockWise(hole)) {
-                    holes[i] = hole.reverse();
-                }
+        }
+        // make sure hole is CCW
+        for (let i = 0; i < holes.length; i++) {
+            const hole = holes[i];
+            if (ShapeUtils.isClockWise(hole)) {
+                holes[i] = hole.reverse();
             }
         }
 
@@ -137,7 +191,7 @@ export class ExtrudeGeometry extends GeometryBase {
 
             for (let i = 0; i < contour.length; i++) {
                 const vert = this.scalePoint2(contour[i], contourMovements[i], bs);
-                v(vert.x, vert.y, - z);
+                v(vert.x, vert.y, - z + offsetSize.z);
             }
 
             for (let h = 0, hl = holes.length; h < hl; h++) {
@@ -145,7 +199,7 @@ export class ExtrudeGeometry extends GeometryBase {
                 oneHoleMovements = holesMovements[h];
                 for (let i = 0; i < ahole.length; i++) {
                     const vert = this.scalePoint2(ahole[i], oneHoleMovements[i], bs);
-                    v(vert.x, vert.y, - z);
+                    v(vert.x, vert.y, - z + offsetSize.z);
                 }
             }
         }
@@ -153,13 +207,13 @@ export class ExtrudeGeometry extends GeometryBase {
         const bs = bevelSize + bevelOffset;
         for (let i = 0; i < vlen; i++) {
             const vert = bevelEnabled ? this.scalePoint2(vertices[i], verticesMovements[i], bs) : vertices[i];
-            v(vert.x, vert.y, 0);
+            v(vert.x, vert.y, 0 + offsetSize.z);
         }
 
         for (let s = 1; s <= steps; s++) {
             for (let i = 0; i < vlen; i++) {
                 const vert = bevelEnabled ? this.scalePoint2(vertices[i], verticesMovements[i], bs) : vertices[i];
-                v(vert.x, vert.y, depth / steps * s);
+                v(vert.x, vert.y, depth / steps * s + offsetSize.z);
             }
         }
 
@@ -170,7 +224,7 @@ export class ExtrudeGeometry extends GeometryBase {
 
             for (let i = 0, il = contour.length; i < il; i++) {
                 const vert = this.scalePoint2(contour[i], contourMovements[i], bs);
-                v(vert.x, vert.y, depth + z);
+                v(vert.x, vert.y, depth + z + offsetSize.z);
             }
 
             for (let h = 0, hl = holes.length; h < hl; h++) {
@@ -178,7 +232,7 @@ export class ExtrudeGeometry extends GeometryBase {
                 oneHoleMovements = holesMovements[h];
                 for (let i = 0, il = ahole.length; i < il; i++) {
                     const vert = this.scalePoint2(ahole[i], oneHoleMovements[i], bs);
-                    v(vert.x, vert.y, depth + z);
+                    v(vert.x, vert.y, depth + z + offsetSize.z);
                 }
             }
         }
@@ -237,7 +291,7 @@ export class ExtrudeGeometry extends GeometryBase {
             self.addGroup(start, verticesArray.length / 3 - start, 1);
         }
 
-        function sidewalls(contour: Vector2[], layeroffset: number) {
+        function sidewalls(contour: Vector2[], layeroffset: number, isClockWise = false) {
             let i = contour.length;
             while (--i >= 0) {
                 const j = i;
@@ -252,7 +306,7 @@ export class ExtrudeGeometry extends GeometryBase {
                         c = layeroffset + k + slen2,
                         d = layeroffset + j + slen2;
 
-                    f4(a, b, c, d);
+                    f4(a, b, c, d, isClockWise);
                 }
             }
         }
@@ -263,10 +317,16 @@ export class ExtrudeGeometry extends GeometryBase {
             placeholder.push(z);
         }
 
-        function f3(a: number, b: number, c: number) {
-            addVertex(a);
-            addVertex(b);
-            addVertex(c);
+        function f3(a: number, b: number, c: number, isClockWise = false) {
+            if(isClockWise){
+                addVertex(a);
+                addVertex(b);
+                addVertex(c);
+            }else{
+                addVertex(a);
+                addVertex(c);
+                addVertex(b);
+            }
 
             const nextIndex = verticesArray.length / 3;
             const uvs = WorldUVGenerator.generateTopUV(verticesArray, nextIndex - 3, nextIndex - 2, nextIndex - 1);
@@ -276,14 +336,24 @@ export class ExtrudeGeometry extends GeometryBase {
             addUV(uvs[2]);
         }
 
-        function f4(a: number, b: number, c: number, d: number) {
-            addVertex(a);
-            addVertex(b);
-            addVertex(d);
+        function f4(a: number, b: number, c: number, d: number, isClockWise = false) {
+            if(isClockWise){
+                addVertex(a);
+                addVertex(b);
+                addVertex(d);
 
-            addVertex(b);
-            addVertex(c);
-            addVertex(d);
+                addVertex(b);
+                addVertex(c);
+                addVertex(d);
+            }else{
+                addVertex(a);
+                addVertex(d);
+                addVertex(b);
+
+                addVertex(b);
+                addVertex(d);
+                addVertex(c);
+            }
 
             const nextIndex = verticesArray.length / 3;
             const uvs = WorldUVGenerator.generateSideWallUV(verticesArray, nextIndex - 6, nextIndex - 3, nextIndex - 2, nextIndex - 1);
