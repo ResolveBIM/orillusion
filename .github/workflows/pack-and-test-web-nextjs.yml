@@ -93,3 +93,64 @@ jobs:
         working-directory: web-nextjs
         run: npm run build
 
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: pack-orillusion
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get version
+        id: get_version
+        run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+
+      - name: Create git tag
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git tag -a "v${{ steps.get_version.outputs.version }}" -m "Release v${{ steps.get_version.outputs.version }}"
+          git push origin "v${{ steps.get_version.outputs.version }}"
+
+      - name: Download tarball artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: orillusion-tarball
+          path: orillusion-tarball
+
+      - name: Get tarball name
+        id: get_tarball_name
+        run: |
+          cd orillusion-tarball
+          original_name=$(ls *.tgz)
+          tarball_name="orillusion-core-${{ steps.get_version.outputs.version }}.tgz"
+          echo "tarball_name=$tarball_name"
+          echo "tarball_name=$tarball_name" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          release_name: v${{ steps.get_version.outputs.version }}
+          body: |
+            Automated release based on commits to resolve-releases.
+          draft: false
+          prerelease: false
+          asset_path: orillusion-tarball/${{ steps.get_tarball_name.outputs.tarball_name }}
+          asset_name: ${{ steps.get_tarball_name.outputs.tarball_name }}
+          asset_content_type: application/gzip
+
+      - name: Set release as latest
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: ${{ steps.create_release.outputs.id }},
+              make_latest: 'true'
+            })
+
