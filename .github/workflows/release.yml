@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - 'resolve-releases'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Get version
+        id: get_version
+        run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+
+      - name: Create git tag
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git tag -a "v${{ steps.get_version.outputs.version }}" -m "Release v${{ steps.get_version.outputs.version }}"
+          git push origin "v${{ steps.get_version.outputs.version }}"
+
+      - name: Pack orillusion
+        run: npm pack
+
+      - name: Rename tarball
+        id: rename_tarball
+        run: |
+          original_name=$(ls @orillusion-core-*.tgz)
+          new_name="orillusion-core-${{ steps.get_version.outputs.version }}.tgz"
+          mv "$original_name" "$new_name"
+          echo "::set-output name=new_name::$new_name"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          release_name: v${{ steps.get_version.outputs.version }}
+          body: |
+            Automated release based on commits to resolve-releases.
+          draft: false
+          prerelease: false
+          asset_path: ${{ steps.rename_tarball.outputs.new_name }}
+          asset_name: ${{ steps.rename_tarball.outputs.new_name }}
+          asset_content_type: application/gzip
+
+      - name: Set release as latest
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: ${{ steps.create_release.outputs.id }},
+              make_latest: 'true'
+            })
+
