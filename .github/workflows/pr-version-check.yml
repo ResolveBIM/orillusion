@@ -1,0 +1,43 @@
+name: PR Version Check
+
+on:
+  pull_request:
+    branches:
+      - 'resolve-releases'
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source branch
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Get version from source branch
+        id: source_version
+        run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+
+      - name: Check out target branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.base_ref }}
+          fetch-depth: 1
+
+      - name: Get version from target branch
+        id: target_version
+        run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+
+      - name: Compare versions
+        if: steps.source_version.outputs.version == steps.target_version.outputs.version
+        run: |
+          echo "Version in package.json has not been updated."
+          exit 1
+      
+      - name: Check for existing tag
+        run: |
+          if git ls-remote --tags "https://github.com/${{ github.repository }}.git" | grep -q "refs/tags/v${{ steps.source_version.outputs.version }}$"; then
+            echo "Tag v${{ steps.source_version.outputs.version }} already exists."
+            exit 1
+          fi
+
