@@ -1,6 +1,6 @@
 {
     "name": "@orillusion/core",
-    "version": "v0.8.5-fix-server-imports-build-fix",
+    "version": "0.8.5-dev.9-add-ci",
     "author": "Orillusion",
     "description": "Orillusion WebGPU Engine",
     "type": "module",
