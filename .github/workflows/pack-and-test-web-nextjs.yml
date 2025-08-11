@@ -208,16 +208,45 @@ jobs:
           git checkout -b ${{ env.PR_BRANCH_NAME }}
           git push -f origin ${{ env.PR_BRANCH_NAME }}
 
+      - name: Compose PR body (prefer associated PR)
+        id: compose_pr_body
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            const { owner, repo } = context.repo;
+            const sha = context.sha;
+            let prNumber = null;
+            let prUrl = null;
+            try {
+              const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner,
+                repo,
+                commit_sha: sha,
+              });
+              if (Array.isArray(prs) && prs.length > 0) {
+                prNumber = prs[0].number;
+                prUrl = prs[0].html_url;
+              }
+            } catch (error) {
+              core.info(`No associated PR found or error fetching: ${error.message}`);
+            }
+            const tag = process.env.TAG;
+            const linkText = prNumber ? `#${prNumber}` : sha;
+            const linkUrl = prNumber
+              ? prUrl
+              : `https://github.com/${owner}/${repo}/commit/${sha}`;
+            return `Automated PR to update Orillusion to ${tag}\n\nThis PR is automatically created by the CI workflow from Orillusion ${prNumber ? 'pull request' : 'commit'} [${linkText}](${linkUrl}).`;
+        env:
+          TAG: ${{ needs.release.outputs.tag }}
+
       - name: Open PR
         uses: peter-evans/create-pull-request@v7
         with:
           path: ${{ env.WEB_NEXTJS_PATH }}
           title: "CI: Update Orillusion to ${{ needs.release.outputs.tag }} (automated PR)"
-          body: |
-            Automated PR to update Orillusion to ${{ needs.release.outputs.tag }}
-
-            This PR is automatically created by the CI workflow from Orillusion commit 
-            [${{ github.sha }}](https://github.com/ResolveBIM/orillusion/commit/${{ github.sha }}).
+          body: ${{ steps.compose_pr_body.outputs.result }}
           branch: ${{ env.PR_BRANCH_NAME }}
           base: ${{ env.WEB_NEXTJS_BASE_BRANCH }}
           token: ${{ secrets.WEB_NEXTJS_TOKEN }}
