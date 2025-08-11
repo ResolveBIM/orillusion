@@ -5,6 +5,15 @@ on:
     branches:
       - '**'
 
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '7'
+  WEB_NEXTJS_REPO: ResolveBIM/web-nextjs
+  WEB_NEXTJS_PATH: web-nextjs
+  TARBALL_ARTIFACT_NAME: orillusion-tarball
+  TARBALL_DIR: orillusion-tarball
+  WEB_NEXTJS_BASE_BRANCH: dev
+
 jobs:
   pack-orillusion:
     name: Build and pack @orillusion/core
@@ -20,12 +29,12 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 7
+          version: ${{ env.PNPM_VERSION }}
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
       - name: Install dependencies (skip electron download)
@@ -48,7 +57,7 @@ jobs:
       - name: Upload tarball artifact
         uses: actions/upload-artifact@v4
         with:
-          name: orillusion-tarball
+          name: ${{ env.TARBALL_ARTIFACT_NAME }}
           path: ${{ steps.pack.outputs.tarball }}
           if-no-files-found: error
           retention-days: 7
@@ -61,39 +70,39 @@ jobs:
       - name: Download tarball artifact
         uses: actions/download-artifact@v4
         with:
-          name: orillusion-tarball
-          path: orillusion-tarball
+          name: ${{ env.TARBALL_ARTIFACT_NAME }}
+          path: ${{ env.TARBALL_DIR }}
 
-      - name: Checkout ResolveBIM/web-nextjs
+      - name: Checkout web-nextjs
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-          repository: ResolveBIM/web-nextjs
-          path: web-nextjs
+          repository: ${{ env.WEB_NEXTJS_REPO }}
+          path: ${{ env.WEB_NEXTJS_PATH }}
           token: ${{ secrets.WEB_NEXTJS_TOKEN }}
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: web-nextjs/package-lock.json
+          cache-dependency-path: ${{ env.WEB_NEXTJS_PATH }}/package-lock.json
 
       - name: Install web-nextjs dependencies
-        working-directory: web-nextjs
+        working-directory: ${{ env.WEB_NEXTJS_PATH }}
         run: npm install
 
       - name: Install Orillusion tarball (override in node_modules)
-        working-directory: web-nextjs
+        working-directory: ${{ env.WEB_NEXTJS_PATH }}
         shell: bash
         run: |
           set -euo pipefail
           npm uninstall @orillusion/core
-          TARBALL=$(ls -1 ../orillusion-tarball/*.tgz | head -n1)
+          TARBALL=$(ls -1 ../${{ env.TARBALL_DIR }}/*.tgz | head -n1)
           npm install --no-save "$TARBALL"
 
       - name: Build web-nextjs
-        working-directory: web-nextjs
+        working-directory: ${{ env.WEB_NEXTJS_PATH }}
         run: npm run build
 
   release:
@@ -104,6 +113,7 @@ jobs:
       version: ${{ steps.get_version.outputs.version }}
       tarball_name: ${{ steps.get_tarball_name.outputs.tarball_name }}
       tarball_url: ${{ steps.compose_tarball_url.outputs.tarball_url }}
+      tag: ${{ steps.set_tag.outputs.tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -114,23 +124,27 @@ jobs:
         id: get_version
         run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
 
+      - name: Set release tag
+        id: set_tag
+        run: echo "tag=v${{ steps.get_version.outputs.version }}" >> $GITHUB_OUTPUT
+
       - name: Create git tag
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git tag -a "v${{ steps.get_version.outputs.version }}" -m "Release v${{ steps.get_version.outputs.version }}"
-          git push origin "v${{ steps.get_version.outputs.version }}"
+          git tag -a "${{ steps.set_tag.outputs.tag }}" -m "Release ${{ steps.set_tag.outputs.tag }}"
+          git push origin "${{ steps.set_tag.outputs.tag }}"
 
       - name: Download tarball artifact
         uses: actions/download-artifact@v4
         with:
-          name: orillusion-tarball
-          path: orillusion-tarball
+          name: ${{ env.TARBALL_ARTIFACT_NAME }}
+          path: ${{ env.TARBALL_DIR }}
 
       - name: Get tarball name
         id: get_tarball_name
         run: |
-          cd orillusion-tarball
+          cd ${{ env.TARBALL_DIR }}
           tarball_name=$(ls *.tgz)
           echo "tarball_name=$tarball_name"
           echo "tarball_name=$tarball_name" >> $GITHUB_OUTPUT
@@ -138,35 +152,37 @@ jobs:
       - name: Compose tarball URL
         id: compose_tarball_url
         run: |
-          echo "tarball_url=https://github.com/${GITHUB_REPOSITORY}/releases/download/v${{ steps.get_version.outputs.version }}/${{ steps.get_tarball_name.outputs.tarball_name }}" >> $GITHUB_OUTPUT
+          echo "tarball_url=https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ steps.set_tag.outputs.tag }}/${{ steps.get_tarball_name.outputs.tarball_name }}" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release and upload asset
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          name: v${{ steps.get_version.outputs.version }}
+          tag_name: ${{ steps.set_tag.outputs.tag }}
+          name: ${{ steps.set_tag.outputs.tag }}
           body: |
             Automated release based on commits to resolve-releases.
           draft: false
           prerelease: false
           files: |
-            orillusion-tarball/${{ steps.get_tarball_name.outputs.tarball_name }}
+            ${{ env.TARBALL_DIR }}/${{ steps.get_tarball_name.outputs.tarball_name }}
           make_latest: true
 
   open-web-nextjs-pr:
     name: Open PR in web-nextjs
     runs-on: ubuntu-latest
     needs: release
+    env:
+      PR_BRANCH_NAME: ci/update-orillusion-${{ needs.release.outputs.version }}
     steps:
       - name: Checkout NextJS repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-          repository: ResolveBIM/web-nextjs
-          path: web-nextjs
-          ref: dev
+          repository: ${{ env.WEB_NEXTJS_REPO }}
+          path: ${{ env.WEB_NEXTJS_PATH }}
+          ref: ${{ env.WEB_NEXTJS_BASE_BRANCH }}
           token: ${{ secrets.WEB_NEXTJS_TOKEN }}
 
       # Use version and tarball URL from the release job outputs
@@ -176,7 +192,7 @@ jobs:
           echo "Tarball URL: ${{ needs.release.outputs.tarball_url }}"
 
       - name: Install latest release tarball from GitHub
-        working-directory: web-nextjs
+        working-directory: ${{ env.WEB_NEXTJS_PATH }}
         shell: bash
         env:
           TARBALL_URL: ${{ needs.release.outputs.tarball_url }}
@@ -188,21 +204,21 @@ jobs:
 
       - name: Create new branch
         run: |
-          cd web-nextjs
-          git checkout -b ci/update-orillusion-${{ needs.release.outputs.version }}
-          git push -f origin ci/update-orillusion-${{ needs.release.outputs.version }}
+          cd ${{ env.WEB_NEXTJS_PATH }}
+          git checkout -b ${{ env.PR_BRANCH_NAME }}
+          git push -f origin ${{ env.PR_BRANCH_NAME }}
 
       - name: Open PR
         uses: peter-evans/create-pull-request@v7
         with:
-          path: web-nextjs
-          title: "CI: Update Orillusion to v${{ needs.release.outputs.version }} (automated PR)"
+          path: ${{ env.WEB_NEXTJS_PATH }}
+          title: "CI: Update Orillusion to ${{ needs.release.outputs.tag }} (automated PR)"
           body: |
-            Automated PR to update Orillusion to v${{ needs.release.outputs.version }}
+            Automated PR to update Orillusion to ${{ needs.release.outputs.tag }}
 
             This PR is automatically created by the CI workflow from Orillusion commit 
             [${{ github.sha }}](https://github.com/ResolveBIM/orillusion/commit/${{ github.sha }}).
-          branch: ci/update-orillusion-${{ needs.release.outputs.version }}
-          base: dev
+          branch: ${{ env.PR_BRANCH_NAME }}
+          base: ${{ env.WEB_NEXTJS_BASE_BRANCH }}
           token: ${{ secrets.WEB_NEXTJS_TOKEN }}
           reviewers: handzlikchris,sayangel,jgilm,williamih
