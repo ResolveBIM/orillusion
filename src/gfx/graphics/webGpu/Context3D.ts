@@ -97,7 +97,8 @@ export class Context3D extends CEventDispatcher {
             ],
             requiredLimits: {
                 minUniformBufferOffsetAlignment: 256,
-                maxStorageBufferBindingSize: this.adapter.limits.maxStorageBufferBindingSize
+                maxStorageBufferBindingSize: this.adapter.limits.maxStorageBufferBindingSize,
+                ...(canvasConfig?.requiredDeviceLimits || {})
             }
         });
 
