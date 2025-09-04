@@ -32,4 +32,8 @@ export type CanvasConfig = {
      * additional required features for GPU device
      */
     requiredDeviceFeatures?: GPUFeatureName[];
+    /**
+     * required limits for GPU device
+     */
+    requiredDeviceLimits?: GPUDeviceDescriptor['requiredLimits'];
 };
