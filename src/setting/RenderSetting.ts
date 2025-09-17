@@ -29,6 +29,9 @@ export type RenderSetting = {
     useReversedDepth: boolean;
     useCompressGBuffer: boolean;
     gi: boolean;
+    clearRenderTarget: boolean;
+    defaultRenderTargetColorFormat: GPUTextureFormat;
+    defaultRenderTargetDepthFormat: GPUTextureFormat;
     /**
      * post effect
      */

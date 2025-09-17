@@ -1,4 +1,5 @@
 
+import { Engine3D } from "../../../Engine3D";
 import { RenderTexture } from "../../../textures/RenderTexture";
 import { webGPUContext } from "../../graphics/webGpu/Context3D";
 import { GPUTextureFormat } from "../../graphics/webGpu/WebGPUConst";
@@ -31,15 +32,26 @@ export class GBufferFrame extends RTFrame {
     ) {
         let attachments = this.renderTargets;
         let reDescriptors = this.rtDescriptors;
+        const clear: boolean | undefined = key === GBufferFrame.colorPass_GBuffer
+            ? Engine3D.setting.render.clearRenderTarget
+            : undefined
+            ;
+        const loadOp = clear ? 'clear' : 'load';
+        this.depthLoadOp = loadOp;
+
         if (outColor) {
             let colorDec = new RTDescriptor();
-            colorDec.loadOp = 'clear';
+            colorDec.loadOp = loadOp;
             this._colorBufferTex = RTResourceMap.createRTTexture(
                 key + RTResourceConfig.colorBufferTex_NAME,
                 rtWidth,
                 rtHeight,
-                GPUTextureFormat.rgba16float,
-                true
+                key === GBufferFrame.colorPass_GBuffer
+                    ? Engine3D.setting.render.defaultRenderTargetColorFormat
+                    : GPUTextureFormat.rgba16float,
+                true,
+                0,
+                clear,
             );
             attachments.push(this._colorBufferTex);
             reDescriptors.push(colorDec);
@@ -53,7 +65,7 @@ export class GBufferFrame extends RTFrame {
             undefined,
             1,
             0,
-            true,
+            clear,
             true
         );
         attachments.push(this._compressGBufferTex);
@@ -61,7 +73,7 @@ export class GBufferFrame extends RTFrame {
         if (depthTexture) {
             this.depthTexture = depthTexture;
         } else {
-            this.depthTexture = new RenderTexture(rtWidth, rtHeight, GPUTextureFormat.depth32float, false, undefined, 1, 0, true, true);
+            this.depthTexture = new RenderTexture(rtWidth, rtHeight, Engine3D.setting.render.defaultRenderTargetDepthFormat, false, undefined, 1, 0, clear, true);
             this.depthTexture.name = key + `_depthTexture`;
         }
 
