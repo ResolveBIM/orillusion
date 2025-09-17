@@ -21,12 +21,9 @@ export class RTResourceMap {
     public static createRTTexture(name: string, rtWidth: number, rtHeight: number, format: GPUTextureFormat, useMipmap: boolean = false, sampleCount: number = 0, clear?: boolean) {
         let rt: RenderTexture = this.rtTextureMap.get(name);
         if (!rt) {
-            clear = clear !== undefined
-                ? clear
-                : name == RTResourceConfig.colorBufferTex_NAME
-                ? false
-                : true
-                ;
+            if (clear === undefined) {
+                clear = name !== RTResourceConfig.colorBufferTex_NAME;
+            }
             rt = new RenderTexture(rtWidth, rtHeight, format, useMipmap, undefined, 1, sampleCount, clear);
             rt.name = name;
             RTResourceMap.rtTextureMap.set(name, rt);
