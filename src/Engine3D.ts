@@ -23,6 +23,7 @@ import { Matrix4 } from './math/Matrix4';
 import { FXAAPost } from './gfx/renderJob/post/FXAAPost';
 import { PostProcessingComponent } from './components/post/PostProcessingComponent';
 import { GBufferFrame } from './gfx/renderJob/frame/GBufferFrame';
+import { GPUTextureFormat } from './gfx/graphics/webGpu/WebGPUConst';
 
 /** 
  * Orillusion 3D Engine
@@ -139,6 +140,9 @@ export class Engine3D {
             useReversedDepth: false,
             useCompressGBuffer: false,
             gi: false,
+            clearRenderTarget: true,
+            defaultRenderTargetColorFormat: GPUTextureFormat.rgba16float,
+            defaultRenderTargetDepthFormat: GPUTextureFormat.depth32float,
             postProcessing: {
                 bloom: {
                     downSampleStep: 3,

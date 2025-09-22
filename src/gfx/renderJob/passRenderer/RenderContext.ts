@@ -1,4 +1,5 @@
 import { ProfilerUtil } from "../../..";
+import { Engine3D } from '../../../Engine3D';
 import { WebGPUDescriptorCreator } from "../../graphics/webGpu/descriptor/WebGPUDescriptorCreator";
 import { GPUContext } from "../GPUContext";
 import { RTFrame } from "../frame/RTFrame";
@@ -47,7 +48,8 @@ export class RenderContext {
     }
 
     public beginOpaqueRenderPass() {
-        this.beginContinueRendererPassState('clear', 'clear');
+        const loadOp = Engine3D.setting.render.clearRenderTarget ? 'clear' : 'load';
+        this.beginContinueRendererPassState(loadOp, loadOp);
         this.begineNewCommand();
         this.beginNewEncoder();
     }

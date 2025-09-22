@@ -18,14 +18,13 @@ export class RTResourceMap {
         this.rtViewQuad = new Map<string, ViewQuad>();
     }
 
-    public static createRTTexture(name: string, rtWidth: number, rtHeight: number, format: GPUTextureFormat, useMipmap: boolean = false, sampleCount: number = 0) {
+    public static createRTTexture(name: string, rtWidth: number, rtHeight: number, format: GPUTextureFormat, useMipmap: boolean = false, sampleCount: number = 0, clear?: boolean) {
         let rt: RenderTexture = this.rtTextureMap.get(name);
         if (!rt) {
-            if (name == RTResourceConfig.colorBufferTex_NAME) {
-                rt = new RenderTexture(rtWidth, rtHeight, format, useMipmap, undefined, 1, sampleCount, false);
-            } else {
-                rt = new RenderTexture(rtWidth, rtHeight, format, useMipmap, undefined, 1, sampleCount, true);
+            if (clear === undefined) {
+                clear = name !== RTResourceConfig.colorBufferTex_NAME;
             }
+            rt = new RenderTexture(rtWidth, rtHeight, format, useMipmap, undefined, 1, sampleCount, clear);
             rt.name = name;
             RTResourceMap.rtTextureMap.set(name, rt);
         }
