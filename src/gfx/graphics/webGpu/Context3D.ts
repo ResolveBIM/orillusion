@@ -118,6 +118,9 @@ export class Context3D extends CEventDispatcher {
             colorSpace: `srgb`
         });
 
+        this.presentationSize[0] = this.canvas.width;
+        this.presentationSize[1] = this.canvas.height;
+
         this._resizeEvent = new CResizeEvent(CResizeEvent.RESIZE, { width: this.windowWidth, height: this.windowHeight })
         const resizeObserver = new ResizeObserver(() => {
             this.debouncedUpdateSize();
@@ -144,6 +147,10 @@ export class Context3D extends CEventDispatcher {
     }
 
     public updateSize() {
+        if (!this.canvas.clientWidth || !this.canvas.clientHeight) {
+            return;
+        }
+
         this._pixelRatio = this.canvasConfig?.devicePixelRatio || window.devicePixelRatio || 1;
         this._pixelRatio = Math.min(this._pixelRatio, 2.0);
         let w = Math.floor(this.canvas.clientWidth * this._pixelRatio);
