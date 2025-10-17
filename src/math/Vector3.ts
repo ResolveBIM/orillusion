@@ -589,8 +589,8 @@ export class Vector3 {
     }
 
     /**
-     * The components of the source vector are set to the current vector
-     * @param src Original vector
+     * Copies the data from a vector into this instance.
+     * @param src The vector to copy from.
      * @returns 
      */
     public copyFrom(src: Vector3): Vector3 {
