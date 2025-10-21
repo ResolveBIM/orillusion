@@ -32,6 +32,24 @@ export class MatrixGPUBuffer extends GPUBufferBase {
         let bytesLen = len;
         let device = webGPUContext.device;
         if (mapAsyncArray.length > 0) {
+            // iPadOS/iOS 26 Safari-specific handling; those devices will
+            // occasionally crash using the `getMappedRange` call.
+            // `device.queue.writeBuffer` is not universally available, so use
+            // manual buffer copying with `mapAsync` as a fallback.
+            if (typeof device.queue.writeBuffer !== 'undefined') {
+                if (len > mapAsyncArray.length) {
+                    throw new Error(`GPUBufferBase mapAsyncWrite length error. Tried to write ${len} float32s but array is only ${mapAsyncArray.length} float32s long.`);
+                }
+                webGPUContext.device.queue.writeBuffer(
+                    this.buffer,
+                    0,
+                    mapAsyncArray.buffer,
+                    mapAsyncArray.byteOffset,
+                    len * 4,
+                )
+                return;
+            }
+
             let tBuffer: GPUBuffer = null;
             while (this.mapAsyncReady.length) {
                 tBuffer = this.mapAsyncReady.shift();
