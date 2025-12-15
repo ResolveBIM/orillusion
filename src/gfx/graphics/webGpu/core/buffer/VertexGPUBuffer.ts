@@ -17,6 +17,25 @@ export class VertexGPUBuffer extends GPUBufferBase {
         this.bufferType = GPUBufferType.VertexGPUBuffer;
         this.createVertexBuffer(GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.VERTEX, size);
     }
+    
+    public webKitWorkaround_Reset() {
+        let device = webGPUContext.device;
+        const usage = this.buffer.usage;
+        if (this.buffer) {
+            this.buffer.destroy();
+        }
+        if (this._readBuffer) {
+            this._readBuffer.destroy();
+        }
+        
+        this.buffer = device.createBuffer({
+            label: "VertexGPUBuffer",
+            size: this.byteSize,
+            usage: usage,
+            mappedAtCreation: false,
+        });
+        this.apply();
+    }
 
     protected createVertexBuffer(usage: GPUBufferUsageFlags, size: number) {
         let device = webGPUContext.device;

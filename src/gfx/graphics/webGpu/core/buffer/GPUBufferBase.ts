@@ -18,6 +18,9 @@ import { FloatArray } from "../../../../../components/matrix/WasmMatrix";
  * @group GFX
  */
 export class GPUBufferBase {
+    static BuffersNeedingReset: Set<GPUBufferBase> = new Set<GPUBufferBase>();
+    static ResetEveryNEncoderUsageCount = 10000;
+    
     public bufferType: GPUBufferType;
     public buffer: GPUBuffer;
     public memory: MemoryDO;
@@ -29,9 +32,9 @@ export class GPUBufferBase {
     public visibility: number = GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT | GPUShaderStage.COMPUTE;
     protected mapAsyncBuffersOutstanding = 0;
     protected mapAsyncReady: GPUBuffer[];
-    private _readBuffer: GPUBuffer;
+    protected _readBuffer: GPUBuffer;
     private _dataView: Float32Array;
-
+    private _encoderUsageCount = 0;
     constructor() {
         this.mapAsyncReady = [];
         // this.memory = new MemoryDO();
@@ -40,6 +43,16 @@ export class GPUBufferBase {
     }
 
     public debug() {
+    }
+    
+    public webKitWorkaround_trackUsageAndMarkForResetIfNeeded() {
+        if(this['webKitWorkaround_Reset'] === undefined) // check if inheriting class is supporting
+            return;
+        
+        this._encoderUsageCount++;
+        if(this._encoderUsageCount % GPUBufferBase.ResetEveryNEncoderUsageCount == 0) {
+            GPUBufferBase.BuffersNeedingReset.add(this);
+        }
     }
 
     public reset(clean: boolean = false, size: number = 0, data?: Float32Array) {
