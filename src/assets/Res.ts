@@ -28,6 +28,8 @@ import { Ctor, Parser } from '../util/Global';
 import { ParserBase } from '../loader/parser/ParserBase';
 import { GeometryBase } from '../core/geometry/GeometryBase';
 import { LitMaterial } from '../materials/LitMaterial';
+import {RenderShaderPass} from "../gfx/graphics/webGpu/shader/RenderShaderPass";
+import {Engine3D} from "../Engine3D";
 
 /**
  * Resource management classes for textures, materials, models, and preset bodies.
@@ -434,7 +436,7 @@ export class Res {
      */
     public normalTexture: Uint8ArrayTexture;
     public maskTexture: Uint8ArrayTexture;
-    public whiteTexture: Uint8ArrayTexture;
+    public whiteTexture: Uint8ArrayTexture;    
     public blackTexture: Uint8ArrayTexture;
     public redTexture: Uint8ArrayTexture;
     public blueTexture: Uint8ArrayTexture;
@@ -494,6 +496,8 @@ export class Res {
             }
         }
     }
+    
+    private static webKitWorkaround_recreateTexturesEvery = 1000
 
     /**
      * Initialize a common texture object. Provide a universal solid color texture object.
@@ -508,6 +512,27 @@ export class Res {
         this.greenTexture = this.createTexture(32, 32, 0, 255, 0, 255, 'default-greenTexture');
         this.yellowTexture = this.createTexture(32, 32, 0, 255, 255, 255.0, 'default-yellowTexture');
         this.grayTexture = this.createTexture(32, 32, 128, 128, 128, 255.0, 'default-grayTexture');
+        
+        if(Engine3D.webKitWorkaround_IS_APPLE_DEVICE) {
+            setTimeout(() => {
+                const oldWhiteTexture = this.whiteTexture;
+                this.whiteTexture = this.createTexture(32, 32, 255, 255, 255, 255, 'default-whiteTexture-recreated');
+                
+                for (const pass of RenderShaderPass.AllPasses) {
+                    for (const textureKey in pass.textures) {
+                        const texture = pass.getTexture(textureKey);
+                        if(texture && texture.name) {
+                            if(texture.name.indexOf('default-whiteTexture') !== -1) {
+                                pass.setTexture(textureKey, this.whiteTexture);
+                            }
+                        }
+                    }
+                }
+
+                this.defaultGUITexture.texture = this.whiteTexture;
+                
+            }, Res.webKitWorkaround_recreateTexturesEvery);
+        }
 
         let brdf = new BRDFLUTGenerate();
         let brdf_texture = brdf.generateBRDFLUTTexture();
