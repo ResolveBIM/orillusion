@@ -531,7 +531,6 @@ export class Res {
 
                 this.defaultGUITexture.texture = this.whiteTexture;
                 
-                oldWhiteTexture.destroy(true);
                 setTimeout(() => {
                     oldWhiteTexture.destroy(true);
                 }, 100);
