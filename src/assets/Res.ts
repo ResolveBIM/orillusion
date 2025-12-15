@@ -497,7 +497,7 @@ export class Res {
         }
     }
     
-    private static webKitWorkaround_recreateTexturesEvery = 1000
+    private static webKitWorkaround_recreateTexturesEvery = 30 * 1000;
 
     /**
      * Initialize a common texture object. Provide a universal solid color texture object.
@@ -514,7 +514,7 @@ export class Res {
         this.grayTexture = this.createTexture(32, 32, 128, 128, 128, 255.0, 'default-grayTexture');
         
         if(Engine3D.webKitWorkaround_IS_APPLE_DEVICE) {
-            setTimeout(() => {
+            setInterval(() => {
                 const oldWhiteTexture = this.whiteTexture;
                 this.whiteTexture = this.createTexture(32, 32, 255, 255, 255, 255, 'default-whiteTexture-recreated');
                 
