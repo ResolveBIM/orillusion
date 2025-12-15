@@ -484,7 +484,7 @@ export class Engine3D {
         );
     }
 
-    private static webKitWorkaround_IS_APPLE_DEVICE: boolean = undefined;
+    public static webKitWorkaround_IS_APPLE_DEVICE: boolean = undefined;
     private static webKitWorkaround_IS_APPLE_DEVICE_check_error_logged = false;
     
     // Workaround for https://bugs.webkit.org/show_bug.cgi?id=303203
