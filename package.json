@@ -1,6 +1,6 @@
 {
     "name": "@orillusion/core",
-    "version": "0.8.5-dev.9-use-GPUQueue.writeBuffer-to-fix-getMappedRange-error-on-iPadOS",
+    "version": "v0.8.5-dev.10-ios-memory-leak-workarounds",
     "author": "Orillusion",
     "description": "Orillusion WebGPU Engine",
     "type": "module",
