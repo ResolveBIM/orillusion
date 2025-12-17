@@ -497,7 +497,7 @@ export class Res {
         }
     }
     
-    private static webKitWorkaround_recreateTexturesEvery = 30 * 1000;
+    private static webKitWorkaround_recreateTexturesEvery = 60 * 1000;
 
     /**
      * Initialize a common texture object. Provide a universal solid color texture object.
