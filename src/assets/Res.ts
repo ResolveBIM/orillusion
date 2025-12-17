@@ -535,6 +535,32 @@ export class Res {
                     oldWhiteTexture.destroy(true);
                 }, 100);
             }, Res.webKitWorkaround_recreateTexturesEvery);
+
+            const reloadFonts = async () => {
+                const fontUrl = "/bmfont/roboto_0.png"; // hardcoded webkit issue workaround
+                const fontName = fontUrl.split("/").reverse()[0].split(".")[0];
+                const oldFontTexture = this._texturePool.get(fontUrl);
+                if(oldFontTexture) {
+                    let newFontTexture = new BitmapTexture2D();
+                    newFontTexture.flipY = oldFontTexture.flipY;
+                    await newFontTexture.load(fontUrl, null, true);
+                    this._texturePool.set(fontUrl, newFontTexture);
+                    
+                    const guiSprites = GUISprite.Instances;
+                    for(let sprite of guiSprites) {
+                        if(sprite.guiTexture.texture.name.indexOf(fontName) !== -1) {
+                            sprite.guiTexture.texture = newFontTexture;
+                        }
+                    }
+                    setTimeout(() => {
+                        oldFontTexture.destroy(true);
+                    }, 100);
+                }
+
+                setTimeout(() => reloadFonts(), Res.webKitWorkaround_recreateTexturesEvery);
+            }
+            
+            setTimeout(() => reloadFonts(), Res.webKitWorkaround_recreateTexturesEvery);
         }
 
         let brdf = new BRDFLUTGenerate();

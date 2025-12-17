@@ -27,7 +27,10 @@ export class GUISprite {
     public xoffset: number = 0;
     public yoffset: number = 0;
 
+    public static Instances: Array<GUISprite> = [];
+
     constructor(texture?: GUITexture) {
+        GUISprite.Instances.push(this);
         this.guiTexture = texture || Engine3D.res.defaultGUITexture;
     }
 }
