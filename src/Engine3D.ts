@@ -496,11 +496,11 @@ export class Engine3D {
             if(!Engine3D.webKitWorkaround_IS_APPLE_DEVICE)
                 return;
             
-            const buffersToReset = [...GPUBufferBase.BuffersNeedingReset.values()];
+            const buffersToReset = [...GPUBufferBase.buffersNeedingReset.values()];
             if(buffersToReset.length) {
                 for (const buffer of buffersToReset) {
                     buffer["webKitWorkaround_Reset"]();
-                    GPUBufferBase.BuffersNeedingReset.delete(buffer);
+                    GPUBufferBase.buffersNeedingReset.delete(buffer);
                     // console.log(`Reset Buffers ${buffersToReset.length}, remaining: ${GPUBufferBase.BuffersNeedingReset.size}`);
                     return; // 1 per frame to avoid stutter
                 }

@@ -18,8 +18,8 @@ import { FloatArray } from "../../../../../components/matrix/WasmMatrix";
  * @group GFX
  */
 export class GPUBufferBase {
-    static BuffersNeedingReset: Set<GPUBufferBase> = new Set<GPUBufferBase>();
-    static ResetEveryNEncoderUsageCount = 10000;
+    static buffersNeedingReset: Set<GPUBufferBase> = new Set<GPUBufferBase>();
+    static resetEveryNEncoderUsageCount = 10000;
     
     public bufferType: GPUBufferType;
     public buffer: GPUBuffer;
@@ -50,8 +50,8 @@ export class GPUBufferBase {
             return;
         
         this._encoderUsageCount++;
-        if(this._encoderUsageCount % GPUBufferBase.ResetEveryNEncoderUsageCount == 0) {
-            GPUBufferBase.BuffersNeedingReset.add(this);
+        if(this._encoderUsageCount % GPUBufferBase.resetEveryNEncoderUsageCount == 0) {
+            GPUBufferBase.buffersNeedingReset.add(this);
         }
     }
 
