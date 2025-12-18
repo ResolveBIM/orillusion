@@ -515,6 +515,9 @@ export class Res {
         
         if(Engine3D.webKitWorkaround_IS_APPLE_DEVICE) {
             setInterval(() => {
+                // white texture is used as baseMap for lots of default shaders / materials, that means it's used really heavily for
+                // GPU calls which makes it accumulate a lot of memory-leak due to WebKit bug. Recreating the texture periodically forces
+                // webkit to drop encoder-ids tracking set
                 const oldWhiteTexture = this.whiteTexture;
                 this.whiteTexture = this.createTexture(32, 32, 255, 255, 255, 255, 'default-whiteTexture-recreated');
                 
@@ -537,6 +540,8 @@ export class Res {
             }, Res.webKitWorkaround_recreateTexturesEvery);
 
             const reloadFonts = async () => {
+                // Similar as with white-texture, roboto is our main font used in all game-UIs, it's used heavily
+                // reloading it forces WebKit to drop encoder-ids tracking set same as it does for white-texture
                 const fontUrl = "/bmfont/roboto_0.png"; // hardcoded webkit issue workaround
                 const fontName = fontUrl.split("/").reverse()[0].split(".")[0];
                 const oldFontTexture = this._texturePool.get(fontUrl);
