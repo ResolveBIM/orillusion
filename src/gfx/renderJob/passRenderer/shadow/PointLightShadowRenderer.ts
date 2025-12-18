@@ -48,7 +48,7 @@ export class PointLightShadowRenderer extends RendererBase {
         super();
         this.passType = PassType.POINT_SHADOW;
 
-        // this.shadowSize = Engine3D.setting.shadow.pointShadowSize;
+        this.shadowSize = Engine3D.setting.shadow.pointShadowSize;
         this._shadowCameraDic = new Map<ILight, CubeShadowMapInfo>();
         this.cubeArrayTexture = new DepthCubeArrayTexture(this.shadowSize, this.shadowSize, 8);
         this.colorTexture = new VirtualTexture(this.shadowSize, this.shadowSize, GPUTextureFormat.bgra8unorm, false);

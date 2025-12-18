@@ -71,13 +71,16 @@ export class GPUContext {
         if (this.lastGeometry != geometry) {
             this.lastGeometry = geometry;
 
-            if (geometry.indicesBuffer)
+            if (geometry.indicesBuffer) {
+                geometry.indicesBuffer.indicesGPUBuffer.webKitWorkaround_trackUsageAndMarkForResetIfNeeded();
                 encoder.setIndexBuffer(geometry.indicesBuffer.indicesGPUBuffer.buffer, geometry.indicesBuffer.indicesFormat);
+            }
 
             let vertexBuffer = geometry.vertexBuffer.vertexGPUBuffer;
             let vertexBufferLayouts = geometry.vertexBuffer.vertexBufferLayouts;
             for (let i = 0; i < vertexBufferLayouts.length; i++) {
                 const vbLayout = vertexBufferLayouts[i];
+                vertexBuffer.webKitWorkaround_trackUsageAndMarkForResetIfNeeded();
                 encoder.setVertexBuffer(i, vertexBuffer.buffer, vbLayout.offset, vbLayout.size);
             }
         }

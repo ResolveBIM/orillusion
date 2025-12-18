@@ -11,6 +11,7 @@ import { Texture } from '../gfx/graphics/webGpu/core/texture/Texture';
 export class BitmapTexture2D extends Texture {
     private _source: HTMLCanvasElement | ImageBitmap | OffscreenCanvas | HTMLImageElement;
     public premultiplyAlpha: PremultiplyAlpha = 'none';
+    private static _bitmapCache = new Map<string, ImageBitmap>();
 
     /**
      * @constructor
@@ -59,45 +60,66 @@ export class BitmapTexture2D extends Texture {
      * @param url web url
      * @param loaderFunctions callback function when load complete
      */
-    public async load(url: string, loaderFunctions?: LoaderFunctions) {
+    public async load(url: string, loaderFunctions?: LoaderFunctions, allowCache: boolean = false) {
         this.name = StringUtil.getURLName(url);
-        if (url.indexOf(';base64') != -1) {
-            const img = document.createElement('img');
-            let start = url.indexOf('data:image');
-            let uri = url.substring(start, url.length);
+        const cacheKey = `${url}|flipY=${this.flipY ? 1 : 0}`;
+        
+        if(allowCache) {
+            const cached = BitmapTexture2D._bitmapCache.get(cacheKey);
+            if (cached) {
+                console.log(`BitmapTexture2D load from cache ${url}`);
+                this.format = GPUTextureFormat.rgba8unorm;
+                this.generate(cached);
+                return true;
+            }
+        }
+
+        console.log(`BitmapTexture2D load ${url}`);
+        let imageBitmap: ImageBitmap;
+
+        if (url.indexOf(";base64") !== -1) {
+            const img = document.createElement("img");
+            const start = url.indexOf("data:image");
+            const uri = start >= 0 ? url.substring(start) : url;
+
             img.src = uri;
             await img.decode();
+
             img.width = Math.max(img.width, 32);
             img.height = Math.max(img.height, 32);
-            const imageBitmap = await createImageBitmap(img, {
+
+            imageBitmap = await createImageBitmap(img, {
                 resizeWidth: img.width,
                 resizeHeight: img.height,
                 imageOrientation: this.flipY ? "flipY" : "from-image",
-                premultiplyAlpha: 'none'
+                premultiplyAlpha: "none",
             });
-            this.format = GPUTextureFormat.rgba8unorm;
-            this.generate(imageBitmap);
         } else {
-            return new Promise((succ, fial) => {
-                fetch(url, {
-                    headers: Object.assign({
-                        'Accept': 'image/avif,image/webp,*/*'
-                    }, loaderFunctions?.headers)
-                }).then((r) => {
-                    // const img = await r.blob();
-                    // await this.loadFromBlob(img);
-                    LoaderBase.read(url, r, loaderFunctions).then((chunks) => {
-                        let img = new Blob([chunks], { type: 'image/jpeg' });
-                        chunks = null;
-                        this.loadFromBlob(img).then(() => {
-                            succ(true);
-                        });
-                    });
+            const r = await fetch(url, {
+                headers: Object.assign(
+                    { Accept: "image/avif,image/webp,*/*" },
+                    loaderFunctions?.headers
+                ),
+            });
 
-                })
-            })
+            const chunks = await LoaderBase.read(url, r, loaderFunctions);
 
+            // Prefer real content-type if available
+            const contentType = r.headers.get("content-type") ?? "application/octet-stream";
+            const blob = new Blob([chunks], { type: contentType });
+
+            imageBitmap = await createImageBitmap(blob, {
+                imageOrientation: this.flipY ? "flipY" : "from-image",
+                premultiplyAlpha: "none",
+            });
         }
+
+        if(allowCache) {
+            BitmapTexture2D._bitmapCache.set(cacheKey, imageBitmap);
+        }
+
+        this.format = GPUTextureFormat.rgba8unorm;
+        this.generate(imageBitmap);
         return true;
     }
 
