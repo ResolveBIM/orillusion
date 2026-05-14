@@ -82,9 +82,12 @@ export class RenderShaderPass extends ShaderPassBase {
     protected _textureChange: boolean = false;
     protected _groupsShaderReflectionVarInfos: ShaderReflectionVarInfo[][];
     outBufferMask: Vector4;
+    
+    public static AllPasses: Array<RenderShaderPass> = [];
 
     constructor(vs: string, fs: string) {
         super();
+        RenderShaderPass.AllPasses.push(this);
 
         this.vsName = vs.toLowerCase();
         this.fsName = fs.toLowerCase();

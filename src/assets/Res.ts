@@ -28,6 +28,8 @@ import { Ctor, Parser } from '../util/Global';
 import { ParserBase } from '../loader/parser/ParserBase';
 import { GeometryBase } from '../core/geometry/GeometryBase';
 import { LitMaterial } from '../materials/LitMaterial';
+import {RenderShaderPass} from "../gfx/graphics/webGpu/shader/RenderShaderPass";
+import {Engine3D} from "../Engine3D";
 
 /**
  * Resource management classes for textures, materials, models, and preset bodies.
@@ -434,7 +436,7 @@ export class Res {
      */
     public normalTexture: Uint8ArrayTexture;
     public maskTexture: Uint8ArrayTexture;
-    public whiteTexture: Uint8ArrayTexture;
+    public whiteTexture: Uint8ArrayTexture;    
     public blackTexture: Uint8ArrayTexture;
     public redTexture: Uint8ArrayTexture;
     public blueTexture: Uint8ArrayTexture;
@@ -494,6 +496,8 @@ export class Res {
             }
         }
     }
+    
+    private static webKitWorkaround_recreateTexturesEvery = 60 * 1000;
 
     /**
      * Initialize a common texture object. Provide a universal solid color texture object.
@@ -508,6 +512,61 @@ export class Res {
         this.greenTexture = this.createTexture(32, 32, 0, 255, 0, 255, 'default-greenTexture');
         this.yellowTexture = this.createTexture(32, 32, 0, 255, 255, 255.0, 'default-yellowTexture');
         this.grayTexture = this.createTexture(32, 32, 128, 128, 128, 255.0, 'default-grayTexture');
+        
+        if(Engine3D.webKitWorkaround_IS_APPLE_DEVICE) {
+            setInterval(() => {
+                // white texture is used as baseMap for lots of default shaders / materials, that means it's used really heavily for
+                // GPU calls which makes it accumulate a lot of memory-leak due to WebKit bug. Recreating the texture periodically forces
+                // webkit to drop encoder-ids tracking set
+                const oldWhiteTexture = this.whiteTexture;
+                this.whiteTexture = this.createTexture(32, 32, 255, 255, 255, 255, 'default-whiteTexture-recreated');
+                
+                for (const pass of RenderShaderPass.AllPasses) {
+                    for (const textureKey in pass.textures) {
+                        const texture = pass.getTexture(textureKey);
+                        if(texture && texture.name) {
+                            if(texture.name.indexOf('default-whiteTexture') !== -1) {
+                                pass.setTexture(textureKey, this.whiteTexture);
+                            }
+                        }
+                    }
+                }
+
+                this.defaultGUITexture.texture = this.whiteTexture;
+                
+                setTimeout(() => {
+                    oldWhiteTexture.destroy(true);
+                }, 100);
+            }, Res.webKitWorkaround_recreateTexturesEvery);
+
+            const reloadFonts = async () => {
+                // Similar as with white-texture, roboto is our main font used in all game-UIs, it's used heavily
+                // reloading it forces WebKit to drop encoder-ids tracking set same as it does for white-texture
+                const fontUrl = "/bmfont/roboto_0.png"; // hardcoded webkit issue workaround
+                const fontName = fontUrl.split("/").reverse()[0].split(".")[0];
+                const oldFontTexture = this._texturePool.get(fontUrl);
+                if(oldFontTexture) {
+                    let newFontTexture = new BitmapTexture2D();
+                    newFontTexture.flipY = oldFontTexture.flipY;
+                    await newFontTexture.load(fontUrl, null, true);
+                    this._texturePool.set(fontUrl, newFontTexture);
+                    
+                    const guiSprites = GUISprite.Instances;
+                    for(let sprite of guiSprites) {
+                        if(sprite.guiTexture.texture.name.indexOf(fontName) !== -1) {
+                            sprite.guiTexture.texture = newFontTexture;
+                        }
+                    }
+                    setTimeout(() => {
+                        oldFontTexture.destroy(true);
+                    }, 100);
+                }
+
+                setTimeout(() => reloadFonts(), Res.webKitWorkaround_recreateTexturesEvery);
+            }
+            
+            setTimeout(() => reloadFonts(), Res.webKitWorkaround_recreateTexturesEvery);
+        }
 
         let brdf = new BRDFLUTGenerate();
         let brdf_texture = brdf.generateBRDFLUTTexture();

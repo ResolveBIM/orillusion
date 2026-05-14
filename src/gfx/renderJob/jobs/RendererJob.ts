@@ -211,25 +211,29 @@ export class RendererJob {
 
         this.occlusionSystem.update(view.camera, view.scene);
         this.clusterLightingRender.render(view, this.occlusionSystem);
+        
+        //TODO: 5189 - ios workaround to reduce memory use/leak. For now we're not using those orillusion features
+        // if (this.shadowMapPassRenderer) {
+        //     ShadowLightsCollect.update(view);
+        //     this.shadowMapPassRenderer.render(view, this.occlusionSystem);
+        // }
 
-        if (this.shadowMapPassRenderer) {
-            ShadowLightsCollect.update(view);
-            this.shadowMapPassRenderer.render(view, this.occlusionSystem);
-        }
+        //TODO: 5189 - ios workaround to reduce memory use/leak. For now we're not using those orillusion features
+        // if (this.pointLightShadowRenderer) {
+        //     this.pointLightShadowRenderer.render(view, this.occlusionSystem);
+        // }
 
-        if (this.pointLightShadowRenderer) {
-            this.pointLightShadowRenderer.render(view, this.occlusionSystem);
-        }
+        //TODO: 5189 - ios workaround to reduce memory use/leak. For now we're not using those orillusion features
+        // if (this.depthPassRenderer) {
+        //     this.depthPassRenderer.compute(view, this.occlusionSystem);
+        //     this.depthPassRenderer.render(view, this.occlusionSystem);
+        // }
 
-        if (this.depthPassRenderer) {
-            this.depthPassRenderer.compute(view, this.occlusionSystem);
-            this.depthPassRenderer.render(view, this.occlusionSystem);
-        }
-
-        if (Engine3D.setting.gi.enable && this.ddgiProbeRenderer) {
-            this.ddgiProbeRenderer.compute(view, this.occlusionSystem);
-            this.ddgiProbeRenderer.render(view, this.occlusionSystem);
-        }
+        //TODO: 5189 - ios workaround to reduce memory use/leak. For now we're not using those orillusion features
+        // if (Engine3D.setting.gi.enable && this.ddgiProbeRenderer) {
+        //     this.ddgiProbeRenderer.compute(view, this.occlusionSystem);
+        //     this.ddgiProbeRenderer.render(view, this.occlusionSystem);
+        // }
 
 
         let passList = this.rendererMap.getAllPassRenderer();

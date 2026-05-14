@@ -62,28 +62,29 @@ export class DDGIProbeRenderer extends RendererBase {
     constructor(volume: DDGIIrradianceVolume) {
         super();
 
-        this.passType = PassType.GI;
-
-        this.volume = volume;
-        let giSetting = volume.setting;
-
-        this.cubeCamera = new CubeCamera(0.01, 5000);
-
-        this.sizeW = giSetting.probeSourceTextureSize;
-        this.sizeH = giSetting.probeSourceTextureSize;
-
-        this.probeNext = giSetting.probeSourceTextureSize / giSetting.probeSize;
-
-        this.initIrradianceMap(volume);
-
-        this.probeRenderResult = new ProbeRenderResult();
-
-        let probeGBufferFrame = new ProbeGBufferFrame(this.sizeW, this.sizeH, false);
-        this.positionMap = probeGBufferFrame.renderTargets[0];
-        this.normalMap = probeGBufferFrame.renderTargets[1];
-        this.colorMap = probeGBufferFrame.renderTargets[2];
-
-        this.setRenderStates(probeGBufferFrame);
+        //TODO: 5189 - ios workaround to reduce memory use/leak. For now we're not using those orillusion features
+        // this.passType = PassType.GI;
+        //
+        // this.volume = volume;
+        // let giSetting = volume.setting;
+        //
+        // this.cubeCamera = new CubeCamera(0.01, 5000);
+        //
+        // this.sizeW = giSetting.probeSourceTextureSize;
+        // this.sizeH = giSetting.probeSourceTextureSize;
+        //
+        // this.probeNext = giSetting.probeSourceTextureSize / giSetting.probeSize;
+        //
+        // this.initIrradianceMap(volume);
+        //
+        // this.probeRenderResult = new ProbeRenderResult();
+        //
+        // let probeGBufferFrame = new ProbeGBufferFrame(this.sizeW, this.sizeH, false);
+        // this.positionMap = probeGBufferFrame.renderTargets[0];
+        // this.normalMap = probeGBufferFrame.renderTargets[1];
+        // this.colorMap = probeGBufferFrame.renderTargets[2];
+        //
+        // this.setRenderStates(probeGBufferFrame);
     }
 
     /**

@@ -28,23 +28,25 @@ export class PreDepthPassRenderer extends RendererBase {
     zCullingCompute: ZCullingCompute;
     constructor() {
         super();
-        this.passType = PassType.DEPTH;
-
-        let size = webGPUContext.presentationSize;
-        let scale = 1;
-        this.zBufferTexture = RTResourceMap.createRTTexture(RTResourceConfig.zBufferTexture_NAME, Math.floor(size[0] * scale), Math.floor(size[1] * scale), GPUTextureFormat.rgba16float, false);
-        let rtDec = new RTDescriptor()
-        rtDec.clearValue = [0, 0, 0, 0];
-        rtDec.loadOp = `clear`;
-        let rtFrame = new RTFrame([
-        ], [
-            // new RTDescriptor()
-        ],
-            RTResourceMap.createRTTexture(RTResourceConfig.zPreDepthTexture_NAME, Math.floor(size[0]), Math.floor(size[1]), GPUTextureFormat.depth32float, false),
-            null,
-            false
-        );
-        this.setRenderStates(rtFrame);
+        
+        //TODO: 5189 - ios workaround to reduce memory use/leak. For now we're not using those orillusion features
+        // this.passType = PassType.DEPTH;
+        //
+        // let size = webGPUContext.presentationSize;
+        // let scale = 1;
+        // this.zBufferTexture = RTResourceMap.createRTTexture(RTResourceConfig.zBufferTexture_NAME, Math.floor(size[0] * scale), Math.floor(size[1] * scale), GPUTextureFormat.rgba16float, false);
+        // let rtDec = new RTDescriptor()
+        // rtDec.clearValue = [0, 0, 0, 0];
+        // rtDec.loadOp = `clear`;
+        // let rtFrame = new RTFrame([
+        // ], [
+        //     // new RTDescriptor()
+        // ],
+        //     RTResourceMap.createRTTexture(RTResourceConfig.zPreDepthTexture_NAME, Math.floor(size[0]), Math.floor(size[1]), GPUTextureFormat.depth32float, false),
+        //     null,
+        //     false
+        // );
+        // this.setRenderStates(rtFrame);
     }
 
     render(view: View3D, occlusionSystem: OcclusionSystem) {

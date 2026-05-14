@@ -24,6 +24,7 @@ import { FXAAPost } from './gfx/renderJob/post/FXAAPost';
 import { PostProcessingComponent } from './components/post/PostProcessingComponent';
 import { GBufferFrame } from './gfx/renderJob/frame/GBufferFrame';
 import { GPUTextureFormat } from './gfx/graphics/webGpu/WebGPUConst';
+import {GPUBufferBase} from "./gfx/graphics/webGpu/core/buffer/GPUBufferBase";
 
 /** 
  * Orillusion 3D Engine
@@ -468,12 +469,59 @@ export class Engine3D {
         this.resume()
     }
 
+
+    private static webKitWorkaround_isAppleDevice = (): boolean => {
+        if (typeof navigator === 'undefined') {
+            return false;
+        }
+
+        const ua = navigator.userAgent || '';
+        const platform = navigator.platform || '';
+
+        return (
+            /iPad|iPhone|iPod/.test(ua) ||
+            (/Mac/i.test(platform) && 'ontouchend' in document)
+        );
+    }
+
+    public static webKitWorkaround_IS_APPLE_DEVICE: boolean = undefined;
+    private static webKitWorkaround_IS_APPLE_DEVICE_check_error_logged = false;
+    
+    // Workaround for https://bugs.webkit.org/show_bug.cgi?id=303203
+    private static webKitWorkaround_resetBuffersIfNeeded() {
+        try {
+            if(Engine3D.webKitWorkaround_IS_APPLE_DEVICE == undefined)
+                Engine3D.webKitWorkaround_IS_APPLE_DEVICE = Engine3D.webKitWorkaround_isAppleDevice()
+            
+            if(!Engine3D.webKitWorkaround_IS_APPLE_DEVICE)
+                return;
+            
+            const buffersToReset = [...GPUBufferBase.buffersNeedingReset.values()];
+            if(buffersToReset.length) {
+                for (const buffer of buffersToReset) {
+                    buffer["webKitWorkaround_Reset"]();
+                    GPUBufferBase.buffersNeedingReset.delete(buffer);
+                    // console.log(`Reset Buffers ${buffersToReset.length}, remaining: ${GPUBufferBase.BuffersNeedingReset.size}`);
+                    return; // 1 per frame to avoid stutter
+                }
+            }
+        }
+        catch(e) {
+            if(!Engine3D.webKitWorkaround_IS_APPLE_DEVICE_check_error_logged) {
+                Engine3D.webKitWorkaround_IS_APPLE_DEVICE_check_error_logged = true;
+                console.error(`Error in Engine3D.webKitWorkaround_resetBuffersIfNeeded: ${e}`);
+            }
+        }
+    }
+
     public static async updateFrame(time: number) {
         Time.delta = time - Time.time;
         Time.time = time;
         Time.frame += 1;
         Interpolator.tick(Time.delta);
-
+        
+        this.webKitWorkaround_resetBuffersIfNeeded();
+        
         /* update all transform */
         let views = this.views;
         let i = 0;

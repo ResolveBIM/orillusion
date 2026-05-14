@@ -19,6 +19,29 @@ export class IndicesGPUBuffer extends GPUBufferBase {
         this.createIndicesBuffer(GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.INDEX | GPUBufferUsage.INDIRECT, data);
     }
 
+    public webKitWorkaround_Reset() {
+        let device = webGPUContext.device;
+        const usage = this.buffer.usage;
+        const size = this.buffer.size;
+        
+        if (this.buffer) {
+            this.buffer.destroy();
+            
+        }
+        if (this._readBuffer) {
+            this._readBuffer.destroy();
+        }
+        
+        this.buffer = device.createBuffer({
+            label: "IndicesGPUBuffer",
+            size: size,
+            usage: usage,
+            mappedAtCreation: false,
+        });
+
+        this.apply();
+    }
+
     protected createIndicesBuffer(usage: GPUBufferUsageFlags, data?: ArrayBufferData) {
         let device = webGPUContext.device;
         this.byteSize = data.length * 4;
