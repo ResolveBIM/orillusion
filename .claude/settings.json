@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$CLAUDE_PROJECT_DIR\"/../web-nginx/CLAUDE.md ] || [ -f \"$CLAUDE_PROJECT_DIR\"/../CLAUDE.md ]; then echo \"Read the web-nginx CLAUDE.md first (../web-nginx/CLAUDE.md, or ../CLAUDE.md). Its rules and skills apply here.\"; else echo \"WARNING: the web-nginx CLAUDE.md was not found beside this repo. Tell the user before continuing.\"; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
