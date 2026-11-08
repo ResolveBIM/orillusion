@@ -10,6 +10,8 @@ env:
   PNPM_VERSION: '7'
   WEB_NEXTJS_REPO: ResolveBIM/web-nextjs
   WEB_NEXTJS_PATH: web-nextjs
+  WEB_NEXTJS_NODE_VERSION: '26'
+  WEB_NEXTJS_PNPM_VERSION: '10'
   TARBALL_ARTIFACT_NAME: orillusion-tarball
   TARBALL_DIR: orillusion-tarball
   WEB_NEXTJS_BASE_BRANCH: dev
@@ -82,25 +84,30 @@ jobs:
           path: ${{ env.WEB_NEXTJS_PATH }}
           token: ${{ secrets.WEB_NEXTJS_TOKEN }}
 
+      # Match web-nextjs's own CI: pnpm 10 on Node 26, per its engines field.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.WEB_NEXTJS_PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: ${{ env.WEB_NEXTJS_PATH }}/package-lock.json
+          node-version: ${{ env.WEB_NEXTJS_NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: ${{ env.WEB_NEXTJS_PATH }}/pnpm-lock.yaml
 
       - name: Install web-nextjs dependencies
         working-directory: ${{ env.WEB_NEXTJS_PATH }}
-        run: npm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Install Orillusion tarball (override in node_modules)
+      - name: Install Orillusion tarball (override the pinned release)
         working-directory: ${{ env.WEB_NEXTJS_PATH }}
         shell: bash
         run: |
           set -euo pipefail
-          npm uninstall @orillusion/core
           TARBALL=$(ls -1 ../${{ env.TARBALL_DIR }}/*.tgz | head -n1)
-          npm install --no-save "$TARBALL"
+          pnpm add "$TARBALL"
 
       - name: Build web-nextjs
         working-directory: ${{ env.WEB_NEXTJS_PATH }}
